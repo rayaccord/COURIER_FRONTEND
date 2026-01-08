@@ -112,10 +112,26 @@ export default function MamaJollof() {
   }
 
   function goCheckout() { 
-    if (cart.length === 0) return alert("Your cart is empty!"); 
-    localStorage.setItem("cart", JSON.stringify(cart));
-    window.location.href="/signup"; 
+  if (cart.length === 0) {
+    alert("Your cart is empty!");
+    return;
   }
+
+  // Save cart
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  // Check login status
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+  if (isLoggedIn) {
+    // User already signed in → go to checkout
+    window.location.href = "/checkout";
+  } else {
+    // New / signed-out user → go to signup
+    window.location.href = "/signup";
+  }
+}
+
 
   const totalPrice = cart.reduce((s, it) => s + Number(it.price || 0), 0).toFixed(2);
 

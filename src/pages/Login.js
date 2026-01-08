@@ -1,163 +1,69 @@
-import React from "react";
+import React, { useState } from "react";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
   const handleLogin = () => {
-    window.location.href = "/checkout";
+    // 1️⃣ Validation
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    // 2️⃣ Get saved user
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+    // Check if user exists
+    if (!storedUser || storedUser.email !== email) {
+      alert("No account found. Please sign up first.");
+      return;
+    }
+
+    // Check password
+    if (storedUser.password !== password) {
+      alert("Incorrect password.");
+      return;
+    }
+
+    // Login successful
+    localStorage.setItem("isLoggedIn", true);
+    window.location.href = "/"; // redirect to homepage/discovery
   };
 
   return (
     <>
       <style>{`
-        * {
-          box-sizing: border-box;
-          font-family: Arial, sans-serif;
-        }
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #fcb59bff; }
+        .page { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { background: #fd6128; width: 100%; max-width: 420px; padding: 30px 25px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .avatar { width: 70px; height: 70px; background: #4aa3df; border-radius: 8px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; }
+        h2 { text-align: center; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 20px; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 5px; border: 1px solid #ddd; font-size: 14px; }
+        .options { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 20px; color: #555; }
+        .login-btn {  width: 100%;
+  padding: 14px;
+  background: #1e90ff;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(30, 144, 255, 0.6),
+              0 0 20px rgba(30, 144, 255, 0.4);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
 
-        body {
-          background: #f2f4f7;
-        }
-
-        .page {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .container {
-          background: white;
-          width: 100%;
-          max-width: 420px;
-          padding: 30px 25px;
-          border-radius: 10px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .avatar {
-          width: 70px;
-          height: 70px;
-          background: #4aa3df;
-          border-radius: 8px;
-          margin: 0 auto 15px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 32px;
-        }
-
-        h2 {
-          text-align: center;
-          margin-bottom: 8px;
-        }
-
-        .subtitle {
-          text-align: center;
-          color: #777;
-          margin-bottom: 20px;
-          font-size: 14px;
-        }
-
-        .social-buttons {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 15px;
-        }
-
-        .social-btn {
-          flex: 1;
-          padding: 12px;
-          border: none;
-          border-radius: 5px;
-          font-size: 14px;
-          cursor: pointer;
-          color: white;
-        }
-
-        .facebook {
-          background: #1877f2;
-        }
-
-        .google {
-          background: #db4437;
-        }
-
-        .divider {
-          text-align: center;
-          margin: 15px 0;
-          color: #888;
-          position: relative;
-        }
-
-        .divider::before,
-        .divider::after {
-          content: "";
-          height: 1px;
-          width: 40%;
-          background: #ddd;
-          position: absolute;
-          top: 50%;
-        }
-
-        .divider::before {
-          left: 0;
-        }
-
-        .divider::after {
-          right: 0;
-        }
-
-        input {
-          width: 100%;
-          padding: 12px;
-          margin-bottom: 12px;
-          border-radius: 5px;
-          border: 1px solid #ddd;
-          font-size: 14px;
-        }
-
-        .options {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 13px;
-          margin-bottom: 20px;
-          color: #555;
-        }
-
-        .options a {
-          color: #4aa3df;
-          text-decoration: none;
-        }
-
-        .login-btn {
-          width: 100%;
-          padding: 14px;
-          background: #38c2b5;
-          border: none;
-          border-radius: 6px;
-          color: white;
-          font-size: 15px;
-          font-weight: bold;
-          cursor: pointer;
-        }
-
-        .login-btn:hover {
-          background: #2fa89d;
-        }
-
-        .bottom-text {
-          text-align: center;
-          margin-top: 15px;
-          font-size: 13px;
-          color: #666;
-        }
-
-        .bottom-text a {
-          color: #4aa3df;
-          text-decoration: none;
-          font-weight: bold;
-        }
+.login-btn:hover {
+  box-shadow: 0 0 15px rgba(30, 144, 255, 0.9),
+              0 0 30px rgba(30, 144, 255, 0.7);
+  transform: translateY(-1px);
+}
+        .error { color: red; font-size: 13px; margin-bottom: 10px; text-align: center; }
       `}</style>
 
       <div className="page">
@@ -167,35 +73,25 @@ export default function Login() {
           <h2>Welcome Back</h2>
           <p className="subtitle">Sign in to your account.</p>
 
-          <div className="social-buttons">
-            <button className="social-btn facebook">
-              Login with Facebook
-            </button>
-            <button className="social-btn google">
-              Login with Google
-            </button>
-          </div>
+          {error && <div className="error">{error}</div>}
 
-          <div className="divider">or</div>
+          <input
+            type="email"
+            placeholder="Your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-          <input type="email" placeholder="Your email address" />
-          <input type="password" placeholder="Password" />
-
-          <div className="options">
-            <label>
-              <input type="checkbox" /> Remember me
-            </label>
-            <a href="/forgotpassword">Forgot password?</a>
-          </div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           <button className="login-btn" onClick={handleLogin}>
             LOGIN
           </button>
-
-          <p className="bottom-text">
-            Don’t have an account?{" "}
-            <a href="/signup">Create one</a>
-          </p>
         </div>
       </div>
     </>

@@ -24,7 +24,7 @@ export default function Discover() {
   const [results, setResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [profileName, setProfileName] = useState("User");
+  const [profileName, setProfileName] = useState("My Account");
   const [profileImage, setProfileImage] = useState();
 
   const [chatOpen, setChatOpen] = useState(false);
@@ -54,15 +54,14 @@ const [chatLog, setChatLog] = useState([]);
   ];
 
   useEffect(() => {
-    const saved =
-      localStorage.getItem("username") ||
-      localStorage.getItem("userEmail") ||
-      localStorage.getItem("user");
+    const savedName = localStorage.getItem("username");
 
-    if (saved) {
-      const display = saved.includes("@") ? saved.split("@")[0] : saved;
-      setProfileName(display.charAt(0).toUpperCase() + display.slice(1));
-    }
+if (savedName) {
+  setProfileName(
+    savedName.charAt(0).toUpperCase() + savedName.slice(1)
+  );
+}
+
 
     const savedPhoto = localStorage.getItem("profilePhoto");
     setProfileImage(savedPhoto || profilePic);
@@ -121,7 +120,7 @@ const [chatLog, setChatLog] = useState([]);
     localStorage.removeItem("username");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("profilePhoto");
-    setProfileName("User");
+    setProfileName("My Acount");
     setProfileImage();
     navigate("/") || (window.location.href = "/");
   };

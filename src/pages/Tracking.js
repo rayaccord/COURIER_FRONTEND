@@ -1,12 +1,60 @@
 import React, { useEffect, useRef } from "react";
 
 export default function TrackingPage() {
+
+    const params = new URLSearchParams(window.location.search);
+  const orderIdFromURL = params.get("id");
+
+  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  const order = orders.find(o => String(o.id) === String(orderIdFromURL));
+
   const mapRef = useRef(null);
   const minutesEl = useRef(null);
   const estText = useRef(null);
   const progressRing = useRef(null);
+  const [showStatus, setShowStatus] = React.useState(false); // false so it starts hidden
 
-  const INITIAL_MINUTES = 5; // ✅ Changed from 18 to 5 minutes
+
+
+
+
+    /* UPDATE ORDER STATUS TO "WAITING TO SHIP" */
+  useEffect(() => {
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    const lastOrderId = localStorage.getItem("lastOrderId");
+
+    if (!lastOrderId) return;
+
+    const updatedOrders = orders.map(order => {
+      if (String(order.id) === String(lastOrderId)) {
+        // Prevent duplicate history entry
+        const alreadyUpdated = order.statusHistory?.some(
+          s => s.stage === "Waiting to Ship"
+        );
+
+        if (!alreadyUpdated) {
+          return {
+            ...order,
+            status: "Waiting to Ship",
+            statusHistory: [
+              ...(order.statusHistory || []),
+              {
+                stage: "Waiting to Ship",
+                time: new Date().toISOString(),
+              },
+            ],
+          };
+        }
+      }
+      return order;
+    });
+
+    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+  }, []);
+
+
+
+  const INITIAL_MINUTES = 1; // ✅ Changed from 18 to 5 minutes
 
   const routeCoords = [
     { lat: -33.9249, lng: 18.4241 },
@@ -105,6 +153,22 @@ export default function TrackingPage() {
     return () => clearInterval(timer);
   }, []);
 
+
+  const STATUS_FLOW = [
+  "Order Placed",
+  "Pending Confirmation",
+  "Waiting to Ship",
+  "Delivered",
+];
+
+const STATUS_ICONS = {
+  "Order Placed": "🛒",
+  "Pending Confirmation": "⏳",
+  "Waiting to Ship": "📦",
+  "Delivered": "✅",
+};
+
+
   return (
     <div style={styles.page}>
       <style>{CSS}</style>
@@ -139,14 +203,50 @@ export default function TrackingPage() {
             </div>
           </div>
 
-          <div className="btn-row">
-            <button className="btn blue-btn">Hide order status</button>
-            <button className="btn yellow-btn">Reschedule Order</button>
-          </div>
+          <div className="order-actions">
+ 
+  <button
+  className="btn yellow-btn"
+  onClick={() => window.location.href = "/discovery"}
+>
+  Go Home
+</button>
 
-          <button className="btn red-btn cancel-btn">
-            Cancel Order
-          </button>
+
+  <button
+    className="btn red-btn cancel-btn"
+    onClick={() => alert("Cancel order clicked")}
+  >
+    Cancel Order
+  </button>
+</div>
+
+
+          {/* ORDER STATUS TIMELINE */}
+
+{order && order.statusHistory && showStatus && (
+  <div style={{ marginTop: "20px" }}>
+    <h4>Order Status</h4>
+    {STATUS_FLOW.map((stage, idx) => {
+      const completed = STATUS_FLOW.indexOf(order.status) >= idx;
+      const historyItem = order.statusHistory.find(s => s.stage === stage);
+      return (
+        <div key={stage} style={{ marginBottom: "14px" }}>
+          <strong style={{ color: completed ? "#16a34a" : "#aaa" }}>
+            {STATUS_ICONS[stage]} {stage}
+          </strong>
+          {historyItem && (
+            <div style={{ fontSize: "12px", color: "#777" }}>
+              {new Date(historyItem.time).toLocaleString()}
+            </div>
+          )}
+        </div>
+      );
+    })}
+  </div>
+)}
+
+
         </div>
       </div>
     </div>
@@ -298,4 +398,25 @@ const CSS = `
     grid-template-columns: 1fr;
   }
 }
+
+.order-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.order-actions .btn {
+  flex: 1; /* makes buttons equal width */
+  padding: clamp(10px, 2.5vw, 12px);
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+@media (max-width: 480px) {
+  .order-actions {
+    flex-direction: column;
+  }
+}
+
 `;

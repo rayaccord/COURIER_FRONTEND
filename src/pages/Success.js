@@ -6,27 +6,27 @@ export default function OrderSuccess() {
   const [orderId, setOrderId] = useState("");
 
   useEffect(() => {
-    // Get the last order from localStorage
-    const storedOrder = JSON.parse(localStorage.getItem("lastOrder"));
-    setLastOrder(storedOrder);
+  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  const lastOrderId = localStorage.getItem("lastOrderId");
 
-    // Generate a unique order ID
-    const generateOrderId = () => {
-      const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      const randomPart = Math.floor(1000 + Math.random() * 9000);
-      return `#ORD-${datePart}-${randomPart}`;
-    };
+  const order = orders.find(o => o.orderId === lastOrderId);
+  if (!order) return;
 
-    const newOrderId = generateOrderId();
-    setOrderId(newOrderId);
+  // Update status
+  if (order.status !== "Pending Confirmation") {
+    order.status = "Pending Confirmation";
+    order.statusHistory.push({
+      stage: "Pending Confirmation",
+      time: new Date().toISOString(),
+    });
 
-    // Save the order to history
-    if (storedOrder) {
-      const allOrders = JSON.parse(localStorage.getItem("orderHistory")) || [];
-      allOrders.push({ id: newOrderId, ...storedOrder });
-      localStorage.setItem("orderHistory", JSON.stringify(allOrders));
-    }
-  }, []);
+    localStorage.setItem("orders", JSON.stringify(orders));
+  }
+
+  setLastOrder(order);
+  setOrderId(order.orderId);
+}, []);
+
 
   return (
     <div style={{ fontFamily: "Inter, Arial, sans-serif", background: "#f6f7fb", color: "#111", minHeight: "100vh", padding: "0 10px" }}>

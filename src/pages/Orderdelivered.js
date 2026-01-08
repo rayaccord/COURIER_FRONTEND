@@ -19,6 +19,50 @@ const OrderDelivered = () => {
     if (savedRating) setRating(Number(savedRating));
   }, []);
 
+  // ✅ Mark order as DELIVERED
+useEffect(() => {
+  const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+  const lastOrderId = localStorage.getItem("lastOrderId");
+
+  if (!lastOrderId) return;
+
+  let deliveredOrder = null;
+
+  const updatedOrders = orders.map(order => {
+    if (String(order.id) === String(lastOrderId)) {
+      const alreadyDelivered = order.statusHistory?.some(
+        s => s.stage === "Delivered"
+      );
+
+      if (!alreadyDelivered) {
+        deliveredOrder = {
+          ...order,
+          status: "Delivered",
+          statusHistory: [
+            ...(order.statusHistory || []),
+            {
+              stage: "Delivered",
+              time: new Date().toISOString(),
+            },
+          ],
+        };
+        return deliveredOrder;
+      }
+
+      deliveredOrder = order;
+    }
+    return order;
+  });
+
+  localStorage.setItem("orders", JSON.stringify(updatedOrders));
+
+  // ✅ Sync UI with delivered order
+  if (deliveredOrder) {
+    setLastOrder(deliveredOrder);
+  }
+}, []);
+
+
   // Handle star click
   const handleStarClick = (value) => {
     setRating(value);
@@ -94,7 +138,7 @@ const OrderDelivered = () => {
 
       <header style={headerStyle}>
         <img src={logo} alt="Logo" style={logoStyle} />
-        <h2>Order Delivered</h2>
+        <h2>Order successfully Placed</h2>
       </header>
 
       <div style={containerStyle}>
@@ -116,7 +160,7 @@ const OrderDelivered = () => {
           }}
         >
           <div style={deliveredIconStyle}>🎉</div>
-          <h2 style={{ margin: "10px 0" }}>Your Order Has Been Delivered!</h2>
+          <h2 style={{ margin: "10px 0" }}>Your Order Has Been successfully Placed!</h2>
         </div>
 
         <p>We hope you enjoyed your meal. Please rate your experience below.</p>
