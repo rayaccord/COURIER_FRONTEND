@@ -325,6 +325,36 @@ useEffect(() => {
               <div style={{ color: "#8a8a8a" }}>You can use credits to pay for your orders.</div>
               <div style={{ marginTop: "8px", fontWeight: 700 }}>€0.00</div>
             </div>
+
+            <a
+  href="/wallet"
+  style={{
+    marginTop: "14px",
+    padding: "16px",
+    borderRadius: "12px",
+    background: "#ffffff",
+    border: "1px solid #e9e9e9",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    textDecoration: "none",
+    color: "inherit",
+  }}
+>
+  <div>
+    <strong style={{ display: "block", marginBottom: "4px" }}>
+      My Wallet
+    </strong>
+    <span style={{ fontSize: "13px", color: "#8a8a8a" }}>
+      View balance & transactions
+    </span>
+  </div>
+
+  <span style={{ fontSize: "18px", color: "#fd6128" }}>›</span>
+</a>
+
           </aside>
 
           {/* RIGHT */}

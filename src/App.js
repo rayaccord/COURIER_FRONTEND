@@ -34,6 +34,7 @@ import Adminnotification from './pages/Adminnotification';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Forgotpassword from './pages/Forgotpassword';
+import Wallet from './pages/Wallet';
 
 function App() {
   return (
@@ -70,7 +71,8 @@ function App() {
       <Route path="/adminnotification" element={<Adminnotification />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/Forgotpassword" element={<Forgotpassword />} />
+      <Route path="/forgotpassword" element={<Forgotpassword />} />
+      <Route path="/wallet" element={<Wallet />} />
     </Routes>
   );
 }
