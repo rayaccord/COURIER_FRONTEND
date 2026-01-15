@@ -96,6 +96,22 @@ const handleAddCard = () => {
         .menu-item { padding: 12px 14px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; color: #374151; }
         .menu-item.active { background: #111827; color: #fff; }
 
+        @media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .menu-item {
+    white-space: nowrap;
+    margin-bottom: 0;
+  }
+}
+
         /* MAIN */
         .main { flex: 1; padding: 30px; }
         .greeting h2 { margin: 0; font-size: 22px; }

@@ -35,6 +35,11 @@ import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Forgotpassword from './pages/Forgotpassword';
 import Wallet from './pages/Wallet';
+import Restaurantdashboardsignin from './pages/Restaurantdashboardsignin';
+import Restaurantdashboardforgotpassword from './pages/restaurantdashboardforgotpassword';
+import Restaurantdashboardcreateaccount from './pages/Restaurantdashboardcreateaccount';
+import Restaurantdashboard from './pages/Restaurantdashboard';
+
 
 function App() {
   return (
@@ -73,6 +78,10 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgotpassword" element={<Forgotpassword />} />
       <Route path="/wallet" element={<Wallet />} />
+      <Route path="/restaurantdashboardsignin" element={<Restaurantdashboardsignin />} />
+      <Route path="/restaurantdashboardforgotpassword" element={<Restaurantdashboardforgotpassword />} />
+      <Route path="/restaurantdashboardcreateaccount" element={<Restaurantdashboardcreateaccount />} />
+      <Route path="/restaurantdashboard" element={<Restaurantdashboard />} />
     </Routes>
   );
 }
