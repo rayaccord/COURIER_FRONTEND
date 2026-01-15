@@ -3,6 +3,7 @@ import NoRecentTransaction from "../assets/norecenttransaction.png";
 
 export default function Wallet() {
   const [showBalance, setShowBalance] = useState(true);
+  const [balance, setBalance] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showBankModal, setShowBankModal] = useState(false);
   const [copied, setCopied] = useState(null);
@@ -12,11 +13,65 @@ export default function Wallet() {
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
   const [showAddCardModal, setShowAddCardModal] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [referralCode] = useState(
+  "JEFF" + Math.floor(1000 + Math.random() * 9000)
+);
+
+const referralLink = `https://hookfood.app/ref/${referralCode}`;
+
+const [referrals, setReferrals] = useState([
+  {
+    id: 1,
+    friend: "John D.",
+    status: "pending",
+    reward: 500,
+  },
+  {
+    id: 2,
+    friend: "Aisha M.",
+    status: "completed",
+    reward: 500,
+  },
+]);
+
+
+
+  const creditReferralReward = (referral) => {
+  setTransactions((prev) => [
+    {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      amount: `₦${referral.reward}`,
+      type: "Referral Bonus",
+      reference: referralCode,
+      status: "Completed",
+    },
+    ...prev,
+  ]);
+};
+
+
+
+const completeReferral = (id) => {
+  const referral = referrals.find((r) => r.id === id);
+  if (!referral || referral.status === "completed") return;
+
+  setReferrals((prev) =>
+    prev.map((r) =>
+      r.id === id ? { ...r, status: "completed" } : r
+    )
+  );
+
+  creditReferralReward(referral);
+};
+
 
 
 
 
 const [cardForm, setCardForm] = useState({
+
+
   cardNumber: "",
   expiry: "",
   cvc: "",
@@ -73,8 +128,26 @@ const handleAddCard = () => {
     setSubmitting(true);
 
   
+  
+
+
+
     // Simulate request submission
     setTimeout(() => {
+      setTransactions((prev) => [
+  {
+    id: Date.now(),
+    date: new Date().toLocaleDateString(),
+    amount: `₦${numAmount.toFixed(2)}`,
+    type: "Bank Deposit",
+    reference: "BANK-" + Date.now(),
+    status: "Completed",
+  },
+  ...prev,
+]);
+
+setBalance((prev) => prev + numAmount);
+
       setSubmitting(false);
       alert(`Payment request for ₦${numAmount.toFixed(2)} submitted`);
       setShowBankModal(false);
@@ -105,10 +178,21 @@ const handleAddCard = () => {
     border-right: none;
     border-bottom: 1px solid #e5e7eb;
   }
-
+        
   .menu-item {
     white-space: nowrap;
     margin-bottom: 0;
+  }
+    .wallet-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    padding: 10px;
+  }
+
+  .main {
+    padding: 16px;
   }
 }
 
@@ -118,13 +202,24 @@ const handleAddCard = () => {
 
         /* WALLET CARD */
         .wallet-card {
-          margin-top: 30px;
-          background: linear-gradient(135deg, orange, #1e293b);
-          color: #fff;
-          border-radius: 20px;
-          padding: 64px;
-          position: relative;
-        }
+  margin-top: 30px;
+  background: linear-gradient(135deg, orange, #1e293b);
+  color: #fff;
+  border-radius: 20px;
+  padding: 64px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .wallet-card {
+    padding: 24px;
+  }
+
+  .balance {
+    font-size: 28px;
+  }
+}
+
 
         .add-funds {
           position: absolute;
@@ -138,9 +233,9 @@ const handleAddCard = () => {
           cursor: pointer;
         }
 
-        .balance-label { margin-top: 20px; font-size: 20px; font-weight: bold; }
+        .balance-label { margin-top: 20px; font-size: 16px; font-weight: bold; }
         .balance-row { display: flex; align-items: center; gap: 10px; }
-        .balance { font-size: 40px; font-weight: bold; }
+        .balance { font-size: 27px; font-weight: bold; }
         .eye { cursor: pointer; font-size: 14px; opacity: 0.7; }
 
         /* EMPTY */
@@ -349,6 +444,17 @@ const handleAddCard = () => {
   padding: 20px;
 }
 
+@media (max-width: 480px) {
+  .modal,
+  .bank-modal,
+  .add-payment-modal,
+  .add-card-modal {
+    width: 95%;
+    border-radius: 16px;
+  }
+}
+
+
 
 .add-card-header {
   display: grid;
@@ -386,6 +492,23 @@ const handleAddCard = () => {
   font-size: 14px;
   background: #f9fafb;
 }
+
+@media (max-width: 480px) {
+  .bank-input {
+    font-size: 16px;
+    padding: 12px;
+  }
+
+  .add-card-modal input {
+    font-size: 14px;
+  }
+
+  .confirm-btn {
+    padding: 12px;
+  }
+}
+
+
 
 .row {
   display: grid;
@@ -432,6 +555,55 @@ const handleAddCard = () => {
 }
 
 
+@media (max-width: 768px) {
+  .wallet-wrapper {
+    flex-direction: column;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 14px;
+    padding-bottom: 90px; /* 👈 space for bottom nav */
+  }
+
+  /* SIDEBAR → BOTTOM NAV */
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 70px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 6px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    z-index: 1000;
+  }
+
+  .logo {
+    display: none; /* hide logo on mobile */
+  }
+
+  .menu-item {
+    flex: 1;
+    text-align: center;
+    font-size: 11px; /* 👈 reduced text */
+    padding: 6px 4px;
+    margin: 0;
+  }
+
+  .menu-item.active {
+    background: none;
+    color: #111827;
+    font-weight: 600;
+  }
+}
+
+
+
 
       `}</style>
 
@@ -439,33 +611,42 @@ const handleAddCard = () => {
         <div className="sidebar">
   <div className="logo">Hook Food</div>
 
+
   <div
     className={`menu-item ${activePage === "dashboard" ? "active" : ""}`}
     onClick={() => setActivePage("dashboard")}
-  >
+  > 🏠
     Dashboard
   </div>
 
   <div
   className={`menu-item ${activePage === "settings" ? "active" : ""}`}
   onClick={() => setActivePage("settings")}
->
-  Add Card Payment
+>💳
+ Card Payment
 </div>
 
 
   <div
     className={`menu-item ${activePage === "transactions" ? "active" : ""}`}
     onClick={() => setActivePage("transactions")}
-  >
+  >📄
     Transactions
   </div>
+
+  <div
+  className={`menu-item ${activePage === "referral" ? "active" : ""}`}
+  onClick={() => setActivePage("referral")}
+>🎁
+  Referral
+</div>
+
 </div>
 
 
         <div className="main">
   <div className="greeting">
-    <h2>Good Evening, Jeffrey 👋</h2>
+    <h2>Hello  👋</h2>
   </div>
 
   {/* DASHBOARD */}
@@ -480,8 +661,9 @@ const handleAddCard = () => {
 
         <div className="balance-row">
           <div className="balance">
-            {showBalance ? "₦0.00 NGN" : "••••••"}
-          </div>
+  {showBalance ? `₦${balance.toFixed(2)} NGN` : "••••••"}
+</div>
+
           <div className="eye" onClick={() => setShowBalance(!showBalance)}>
             {showBalance ? "Hide" : "Show"}
           </div>
@@ -498,7 +680,7 @@ const handleAddCard = () => {
     </>
   )}
 
-  {/* TRANSACTIONS */}
+
 {/* TRANSACTIONS */}
 {activePage === "transactions" && (
   <div
@@ -521,7 +703,8 @@ const handleAddCard = () => {
     </div>
 
     {/* Table */}
-    <table width="100%" style={{ borderCollapse: "collapse" }}>
+    <div style={{ overflowX: "auto" }}>
+  <table width="100%" style={{ borderCollapse: "collapse", minWidth: "600px" }}>
       <thead>
         <tr style={{ textAlign: "left", color: "#6b7280", fontSize: "13px" }}>
           <th>Date</th>
@@ -569,6 +752,88 @@ const handleAddCard = () => {
         )}
       </tbody>
     </table>
+  </div>
+  </div>
+)}
+
+
+
+{/* REFERRAL LINK */}
+{activePage === "referral" && (
+  <div style={{ background: "#fff", borderRadius: "16px", padding: "24px" }}>
+    <h3>Invite friends & earn 🎉</h3>
+    <p style={{ fontSize: "14px", color: "#6b7280" }}>
+      You and your friend earn ₦500 when they complete their first order.
+    </p>
+
+    <div
+      style={{
+        background: "#f9fafb",
+        padding: "14px",
+        borderRadius: "12px",
+        display: "flex",
+        justifyContent: "space-between",
+        margin: "16px 0",
+      }}
+    >
+      <span style={{ fontSize: "13px", wordBreak: "break-all" }}>
+        {referralLink}
+      </span>
+
+      <button
+        onClick={() => navigator.clipboard.writeText(referralLink)}
+        style={{
+          background: "#111827",
+          color: "#fff",
+          border: "none",
+          padding: "6px 12px",
+          borderRadius: "8px",
+          fontSize: "12px",
+        }}
+      >
+        Copy
+      </button>
+    </div>
+
+    <h4>Your referrals</h4>
+
+    {referrals.map((r) => (
+      <div
+        key={r.id}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: "12px",
+          borderBottom: "1px solid #e5e7eb",
+        }}
+      >
+        <span>{r.friend}</span>
+
+        {r.status === "pending" ? (
+          <span style={{ color: "#f59e0b" }}>Pending</span>
+        ) : (
+          <span style={{ color: "#16a34a" }}>Completed</span>
+        )}
+      </div>
+    ))}
+      {/* Rules */}
+    <div
+      style={{
+        background: "#f8fafc",
+        borderRadius: "14px",
+        padding: "16px",
+        fontSize: "13px",
+        color: "#374151",
+      }}
+    >
+      <strong>How it works</strong>
+      <ul style={{ marginTop: "10px", paddingLeft: "18px" }}>
+        <li>Share your referral link with a friend</li>
+        <li>Your friend signs up using your link</li>
+        <li>Your friend completes their first order</li>
+        <li>You both receive wallet credits</li>
+      </ul>
+    </div>
   </div>
 )}
 
