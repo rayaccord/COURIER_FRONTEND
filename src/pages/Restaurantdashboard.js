@@ -8,6 +8,45 @@ export default function RestaurantDashboard() {
   const [showAddModal, setShowAddModal] = useState(false);
 
 
+
+
+  // Wallet state
+const [walletBalance, setWalletBalance] = useState({
+  available: 120.50, // sample starting balance
+  pending: 35.20,    // pending from recent orders
+});
+
+const [transactions, setTransactions] = useState([
+  {
+    id: "#T1001",
+    type: "Order Payment",
+    amount: 50.0,
+    status: "Paid",
+    date: "2026-01-18",
+  },
+  {
+    id: "#T1002",
+    type: "Order Payment",
+    amount: 35.2,
+    status: "Pending",
+    date: "2026-01-19",
+  },
+  {
+    id: "#T1003",
+    type: "Admin Credit",
+    amount: 20.0,
+    status: "Paid",
+    date: "2026-01-17",
+  },
+]);
+
+// Withdraw modal
+const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+const [withdrawAmount, setWithdrawAmount] = useState("");
+
+
+
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     handleResize();
@@ -21,6 +60,41 @@ export default function RestaurantDashboard() {
         return <MenuManagement />;
       case "History":
         return <OrderHistory />;
+        case "Wallet":
+  return (
+    <>
+      <Wallet
+        walletBalance={walletBalance}
+        transactions={transactions}
+        onRequestWithdraw={() => setShowWithdrawModal(true)}
+      />
+
+      {showWithdrawModal && (
+        <WithdrawModal
+          walletBalance={walletBalance}
+          onClose={() => setShowWithdrawModal(false)}
+          onSubmit={(amount) => {
+            // simulate withdrawal
+            const newTx = {
+              id: `#T${1000 + transactions.length + 1}`,
+              type: "Withdrawal Request",
+              amount,
+              status: "Pending",
+              date: new Date().toISOString().split("T")[0],
+            };
+            setTransactions([newTx, ...transactions]);
+            setWalletBalance({
+              ...walletBalance,
+              available: walletBalance.available - amount,
+            });
+            setShowWithdrawModal(false);
+            alert("Withdrawal requested successfully!");
+          }}
+        />
+      )}
+    </>
+  );
+
       default:
         return <DashboardContent />;
     }
@@ -40,21 +114,29 @@ export default function RestaurantDashboard() {
       </div>
 
       <nav style={styles.navContainer}>
-        {["Dashboard", "Menu", "History"].map((tab) => (
-          <div
-            key={tab}
-            style={{
-              ...styles.navItem,
-              ...(activeTab === tab ? styles.active : {}),
-            }}
-            onClick={() => setActiveTab(tab)}
-          >
-            <span style={styles.navIcon}>
-              {tab === "Dashboard" ? "🏠" : tab === "Menu" ? "📋" : "🕒"}
-            </span>
-            {tab}
-          </div>
-        ))}
+       {["Dashboard", "Menu", "History", "Wallet"].map((tab) => (
+  <div
+    key={tab}
+    style={{
+      ...styles.navItem,
+      ...(activeTab === tab ? styles.active : {}),
+    }}
+    onClick={() => setActiveTab(tab)}
+  >
+    <span style={styles.navIcon}>
+      {tab === "Dashboard"
+        ? "🏠"
+        : tab === "Menu"
+        ? "📋"
+        : tab === "History"
+        ? "🕒"
+        : "💰" // wallet icon
+      }
+    </span>
+    {tab}
+  </div>
+))}
+
       </nav>
     </div>
 
@@ -87,22 +169,30 @@ export default function RestaurantDashboard() {
       {/* MOBILE NAV */}
       {isMobile && (
         <nav style={styles.mobileNav}>
-          {["Dashboard", "Menu", "History"].map((tab) => (
-            <div
-              key={tab}
-              style={{
-                ...styles.mobileItem,
-                flexDirection: "column",
-                ...(activeTab === tab ? styles.activeMobile : {}),
-              }}
-              onClick={() => setActiveTab(tab)}
-            >
-              <span style={styles.navIcon}>
-                {tab === "Dashboard" ? "🏠" : tab === "Menu" ? "📋" : "🕒"}
-              </span>
-              <small style={{ fontSize: 10 }}>{tab}</small>
-            </div>
-          ))}
+         {["Dashboard", "Menu", "History", "Wallet"].map((tab) => (
+  <div
+    key={tab}
+    style={{
+      ...styles.mobileItem,
+      flexDirection: "column",
+      ...(activeTab === tab ? styles.activeMobile : {}),
+    }}
+    onClick={() => setActiveTab(tab)}
+  >
+    <span style={styles.navIcon}>
+      {tab === "Dashboard"
+        ? "🏠"
+        : tab === "Menu"
+        ? "📋"
+        : tab === "History"
+        ? "🕒"
+        : "💰" // wallet icon
+      }
+    </span>
+    <small style={{ fontSize: 10 }}>{tab}</small>
+  </div>
+))}
+
         </nav>
       )}
     </div>
@@ -531,6 +621,137 @@ function HistoryStat({ title, value, highlight }) {
     </div>
   );
 }
+
+
+function Wallet({
+  walletBalance,
+  transactions,
+  onRequestWithdraw
+}) {
+  return (
+    <div style={{ padding: 20 }}>
+      <h3>Restaurant Wallet</h3>
+
+      {/* BALANCE CARDS */}
+      <div style={{ display: "flex", gap: 16, marginTop: 20, flexWrap: "wrap" }}>
+        <div style={styles.walletCard}>
+          <small>Available Balance</small>
+          <h2>€{walletBalance.available.toFixed(2)}</h2>
+        </div>
+        <div style={styles.walletCard}>
+          <small>Pending Balance</small>
+          <h2>€{walletBalance.pending.toFixed(2)}</h2>
+        </div>
+      </div>
+
+      {/* WITHDRAW BUTTON */}
+      <button
+        style={{
+          padding: "12px 18px",
+          marginTop: 20,
+          background: "#2563eb",
+          color: "#fff",
+          border: "none",
+          borderRadius: 8,
+          cursor: "pointer",
+        }}
+        onClick={onRequestWithdraw}
+      >
+        Withdraw Money
+      </button>
+
+      {/* TRANSACTION HISTORY */}
+      <section style={{ marginTop: 30 }}>
+        <h4>Transaction History</h4>
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 10 }}>
+          <thead>
+            <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
+              <th style={styles.tableTh}>ID</th>
+              <th style={styles.tableTh}>Type</th>
+              <th style={styles.tableTh}>Amount</th>
+              <th style={styles.tableTh}>Status</th>
+              <th style={styles.tableTh}>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((tx) => (
+              <tr key={tx.id} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                <td style={styles.tableTd}>{tx.id}</td>
+                <td style={styles.tableTd}>{tx.type}</td>
+                <td style={styles.tableTd}>€{tx.amount.toFixed(2)}</td>
+                <td style={styles.tableTd}>
+                  <span
+                    style={{
+                      padding: "2px 6px",
+                      borderRadius: 6,
+                      fontSize: 12,
+                      color: "#fff",
+                      background:
+                        tx.status === "Paid"
+                          ? "#16a34a"
+                          : tx.status === "Pending"
+                          ? "#f59e0b"
+                          : "#6b7280",
+                    }}
+                  >
+                    {tx.status}
+                  </span>
+                </td>
+                <td style={styles.tableTd}>{tx.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </div>
+  );
+}
+
+
+function WithdrawModal({ onClose, walletBalance, onSubmit }) {
+  const [amount, setAmount] = useState("");
+
+  const handleSubmit = () => {
+    const num = parseFloat(amount);
+    if (!num || num <= 0) return alert("Enter a valid amount");
+    if (num > walletBalance.available)
+      return alert("Cannot withdraw more than available balance");
+    onSubmit(num);
+    setAmount("");
+  };
+
+  return (
+    <div style={styles.modalOverlay}>
+      <div style={styles.modal}>
+        <h3>Request Withdrawal</h3>
+        <p>Available Balance: €{walletBalance.available.toFixed(2)}</p>
+        <input
+          type="number"
+          placeholder="Enter amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={styles.modalInput}
+        />
+        <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+          <button
+            style={{ ...styles.addBtn, flex: 1 }}
+            onClick={handleSubmit}
+          >
+            Submit
+          </button>
+          <button
+            style={{ ...styles.refreshBtn, flex: 1 }}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 
 /* ================= STYLES ================= */
 /* (UNCHANGED from your original, kept fully intact) */
@@ -1005,6 +1226,29 @@ modalAddBtn: {
   fontSize: 16,
   fontWeight: 600,
   cursor: "pointer",
+},
+
+
+walletCard: {
+  background: "#fff",
+  padding: 16,
+  borderRadius: 12,
+  flex: 1,
+  minWidth: 180,
+  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+},
+
+tableTh: {
+  textAlign: "left",
+  padding: "8px 12px",
+  fontSize: 14,
+  color: "#374151",
+},
+
+tableTd: {
+  padding: "8px 12px",
+  fontSize: 14,
+  color: "#111827",
 },
 
 
