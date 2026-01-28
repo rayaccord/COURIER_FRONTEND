@@ -104,8 +104,11 @@ export default function AdminOrders() {
             <Link className="nav-item active" to="/adminorder"><span className="nav-icon">🧾</span>Orders</Link>
             <Link className="nav-item" to="/adminpayment"><span className="nav-icon">💳</span>Payments</Link>
             <Link className="nav-item" to="/adminAnalytics"><span className="nav-icon">📊</span>Analytics</Link>
-            <Link className="nav-item" to="/adminmenulist"><span className="nav-icon">🍽️</span>Menu Items</Link>
+            <Link className="nav-item" to="/adminmenulist"><span className="nav-icon">🏪</span> Restaurants & Stores</Link>
+            <Link className="nav-item" to="/adminsubmissions"><span className="nav-icon">📝</span>Submissions</Link>
+            <Link className="nav-item" to="/admincouriers"><span className="nav-icon">🏍️</span>Courier Management</Link>
             <Link className="nav-item" to="/adminreviews"><span className="nav-icon">⭐</span>Reviews</Link>
+            <Link className="nav-item" to="/adminwallet"><span className="nav-icon">💰 </span>Wallet</Link>
             <Link className="nav-item" to="/adminsetting"><span className="nav-icon">⚙️</span>Settings</Link>
             <Link className="nav-item" to="/adminindex" style={{color:"var(--danger)", fontWeight:600}}>
               <span className="nav-icon">🚪</span>Logout
@@ -115,7 +118,7 @@ export default function AdminOrders() {
 
         <div className="main-content">
           <div className="top-right-notification">
-            <a>🔔</a>
+            <a href="adminnotification">🔔</a>
           </div>
 
           <main className="main">

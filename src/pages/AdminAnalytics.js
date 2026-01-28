@@ -1,201 +1,189 @@
-import React, { useEffect } from "react";
-import Chart from "chart.js/auto";
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Bar, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 export default function Analytics() {
+  const location = useLocation();
+  const [sidebarVisible, setSidebarVisible] = useState(false);
 
-  useEffect(() => {
-    // REVENUE CHART
-    new Chart(document.getElementById("revenueChart"), {
-      type: "line",
-      data: {
-        labels: ["Today", "This Week", "This Month", "This Year"],
-        datasets: [
-          {
-            label: "total",
-            data: [0, 2.5, 0, 50],
-            borderColor: "#38b6ff",
-            backgroundColor: "rgba(56,182,255,0.3)",
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2,
-          },
-        ],
+  // Sample data
+  const revenueData = {
+    labels: ["Gbenga's Grill", "Olamide Pizza", "Sweet Moi-Moi"],
+    datasets: [
+      {
+        label: "Revenue (₦)",
+        data: [120000, 95000, 75000],
+        backgroundColor: "#ff6b00",
       },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
-    });
+    ],
+  };
 
-    // SALES CHART
-    new Chart(document.getElementById("salesChart"), {
-      type: "line",
-      data: {
-        labels: ["January", "February"],
-        datasets: [
-          {
-            label: "total",
-            data: [40, 0],
-            borderColor: "#2a9df4",
-            backgroundColor: "rgba(42,157,244,0.3)",
-            fill: false,
-            tension: 0.3,
-            borderWidth: 2,
-          },
-        ],
+  const popularMenuData = {
+    labels: ["Jollof Rice", "Moi-Moi", "Pepper Soup", "Pizza", "Burger"],
+    datasets: [
+      {
+        label: "Orders Count",
+        data: [120, 80, 60, 90, 50],
+        backgroundColor: ["#ff6b00", "#00a651", "#4da6ff", "#ffa500", "#ff4d4d"],
       },
-      options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } },
-    });
+    ],
+  };
 
-    // ORDER STATUS PIE CHART
-    new Chart(document.getElementById("orderStatusChart"), {
-      type: "pie",
-      data: {
-        labels: ["Cancelled", "Delivered", "Pending"],
-        datasets: [
-          {
-            data: [0, 57, 43],
-            backgroundColor: ["#ffcc33", "#4caf50", "#3d7eff"],
-            borderWidth: 0,
-          },
-        ],
+  const courierPerformanceData = {
+    labels: ["Tunde Akintola", "Chinedu Okafor", "Amina Bello"],
+    datasets: [
+      {
+        label: "Deliveries Completed",
+        data: [45, 38, 50],
+        backgroundColor: "#00a651",
       },
-      options: {
-        plugins: { legend: { position: "bottom", labels: { color: "white" } } },
+      {
+        label: "Deliveries Pending",
+        data: [5, 12, 2],
+        backgroundColor: "#ff4d4d",
       },
-    });
-  }, []);
-
-  const toggleSidebar = () => {
-    const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("show");
+    ],
   };
 
   return (
-    <>
+    <div className="analytics-root">
       <style>{`
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: Arial, sans-serif; background: #0f121b; color: white; }
+        :root{--primary:#ff6b00;--bg:#000814;--panel:#001d3d;--text:#fff}
+        body{margin:0;font-family:Arial,sans-serif;display:flex;background:var(--bg);color:var(--text)}
+        .sidebar{width:230px;background:var(--panel);height:100vh;padding-top:20px;position:fixed;transition:0.3s;left:0;overflow-y:auto}
+        .sidebar.show{left:0}
+        .sidebar ul{list-style:none;padding:0;margin-top:20px}
+        .sidebar ul li{padding:12px 20px;cursor:pointer}
+        .sidebar ul li a{text-decoration:none;color:var(--text);display:block}
+        .sidebar ul li.active{background:rgba(255,107,0,0.25);border-left:4px solid var(--primary)}
+        .container{margin-left:250px;padding:40px;width:calc(100% - 250px)}
+        h1{text-align:center;font-size:26px;margin-bottom:30px}
+        .menu-btn{display:none;position:fixed;left:20px;top:20px;z-index:1000;font-size:30px;cursor:pointer;color:var(--text)}
+        .top-right-notification{position:absolute;top:20px;right:25px;font-size:24px}
+        .top-right-notification a{text-decoration:none;color:white;transition:0.3s}
+        .top-right-notification a:hover{color:#ff6b00}
 
-        .mobile-header { display:none; width:100%; background:#151a24; padding:15px; font-size:20px; position:fixed; top:0; left:0; z-index:999; }
-        .hamburger { font-size:30px; cursor:pointer; user-select:none; }
+        /* Top stats horizontal */
+        .stats-horizontal{display:flex;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+        .stat-card{flex:1;background:var(--panel);padding:20px;border-radius:10px;text-align:center;min-width:150px}
+        .stat-card h3{margin:0;font-size:16px;color:#ddd}
+        .stat-card .stat-number{font-size:24px;color:#ff6b00;margin-top:8px}
 
-        .sidebar { width:230px; background:#151a24; height:100vh; padding:20px; position:fixed; left:0; top:0; transition:0.3s; z-index:998; }
-        .sidebar.hidden { left:-250px; }
-        .sidebar.show { left:0; }
+        /* Charts side by side */
+        .charts-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:30px}
+        .chart-box{flex:1;min-width:300px;background:var(--panel);padding:20px;border-radius:10px}
 
-        .sidebar h2 { margin-bottom:20px; font-size:20px; color:#ff4444; }
-        .menu-item { margin:12px 0; padding:10px 15px; border-radius:4px; cursor:pointer; color:#ddd; display:block; text-decoration:none;}
-        .menu-item:hover, .active { background:#242b3a; color:white; }
-
-        .main-content { margin-left:230px; padding:30px; transition:0.3s; }
-        .content { padding-top:20px; }
-
-        .stats-container { display:flex; gap:20px; flex-wrap:wrap; }
-        .stat-box { background:#151a24; padding:20px; width:220px; border-radius:8px; text-align:center; min-width:160px; }
-        .stat-number { font-size:30px; margin-top:10px; }
-
-        .charts { display:flex; gap:25px; flex-wrap:wrap; }
-        .chart-card { background:#151a24; padding:20px; border-radius:10px; flex:1; min-width:300px; }
-
-        canvas { width:100% !important; height:300px !important; }
-
-        .dashboard-row { display:flex; gap:25px; margin-top:40px; flex-wrap:wrap; }
-        .dashboard-card { background:#151a24; padding:20px; border-radius:10px; flex:1; min-width:300px; }
-
-        .activity-card { max-height:420px; overflow:hidden; display:flex; flex-direction:column; }
-        .activity-list { margin-top:15px; overflow-y:auto; height:350px; padding-right:10px; }
-        .activity-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #242b3a; color:#ddd; }
-
-        /* Notification */
-        .top-right-notification { position:absolute; top:20px; right:25px; font-size:24px; }
-        .top-right-notification a { color:white; text-decoration:none; }
-
-        @media (max-width:768px) {
-          .mobile-header { display:block; }
-          .sidebar { left:-250px; }
-          .main-content { margin-left:0; padding-top:80px; }
+        @media(max-width:768px){
+          .sidebar{left:-250px}
+          .sidebar.show{left:0}
+          .container{margin-left:0;width:100%;padding-top:70px}
+          .menu-btn{display:block}
+          .charts-row{flex-direction:column}
         }
       `}</style>
 
-      {/* MOBILE HEADER */}
-      <div className="mobile-header">
-        <span className="hamburger" onClick={toggleSidebar}>☰</span>
-        <span style={{ marginLeft: 15 }}>Admin Panel</span>
+      {/* MOBILE MENU BUTTON */}
+      <div className="menu-btn" onClick={() => setSidebarVisible(!sidebarVisible)}>
+        {sidebarVisible ? "✖" : "☰"}
       </div>
 
       {/* SIDEBAR */}
-      <div className="sidebar" id="sidebar">
+      <div className={`sidebar ${sidebarVisible ? "show" : ""}`}>
         <h2>Admin Panel</h2>
-
-        <a href="admindashboard" className="menu-item">Home</a>
-        <a href="adminorder" className="menu-item">Orders</a>
-        <a href="adminpayment" className="menu-item">Payments</a>
-        <a href="adminAnalytics" className="menu-item active">Analytics</a>
-        <a href="adminmenulist" className="menu-item">Menu Items</a>
-        <a href="adminreviews" className="menu-item">Reviews</a>
-        <a href="adminsetting" className="menu-item">Settings</a>
-
-        <a href="adminindex" className="menu-item" style={{ color: "#ff4444", fontWeight: "bold" }}>
-          Logout
-        </a>
+        <ul>
+          {[
+            ["🏠 Home", "/admindashboard"],
+            ["🧾 Orders", "/adminorder"],
+            ["💳 Payments", "/adminpayment"],
+            ["📊 Analytics", "/adminAnalytics"],
+            ["🏪 Restaurants & Stores", "/adminmenulist"],
+            ["📝 Submissions", "/adminsubmissions"],
+            ["🏍️ Courier Management", "/admincouriers"],
+            ["⭐ Reviews", "/adminreviews"],
+            ["💰 Wallet", "/adminwallet"],
+            ["⚙️ Settings", "/adminsetting"],
+            ["🚪 Log-out", "/adminindex"],
+          ].map(([label, path]) => (
+            <li key={path} className={location.pathname === path ? "active" : ""}>
+              <a href={path}>{label}</a>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="main-content">
-
-        {/* Notification Icon */}
+      <div className="container">
+        {/* Notification */}
         <div className="top-right-notification">
-          <a href="dashboard-notification.html">🔔</a>
+          <a href="adminnotification">🔔</a>
         </div>
 
-        <div className="content">
-          <h1>Analytics Dashboard</h1>
+        <h1>Expanded Analytics Dashboard</h1>
 
-          {/* STATS */}
-          <div className="stats-container">
-            <div className="stat-box"><div>Total Orders</div><div className="stat-number">50</div></div>
-            <div className="stat-box"><div>Total Revenue</div><div className="stat-number">0</div></div>
-            <div className="stat-box"><div>Total Reviews</div><div className="stat-number">5</div></div>
+        {/* Top Stats */}
+        <div className="stats-horizontal">
+          <div className="stat-card">
+            <h3>Total Orders</h3>
+            <div className="stat-number">50</div>
           </div>
-
-          {/* CHARTS */}
-          <div className="charts">
-            <div className="chart-card">
-              <h3>Revenue Overview</h3>
-              <canvas id="revenueChart"></canvas>
-            </div>
-
-            <div className="chart-card">
-              <h3>Monthly Sales</h3>
-              <canvas id="salesChart"></canvas>
-            </div>
+          <div className="stat-card">
+            <h3>Total Revenue</h3>
+            <div className="stat-number">₦290,000</div>
           </div>
-
-          {/* ORDER STATUS + ACTIVITY */}
-          <div className="dashboard-row">
-
-            <div className="dashboard-card">
-              <h3>Order Status Breakdown</h3>
-              <canvas id="orderStatusChart"></canvas>
-            </div>
-
-            <div className="dashboard-card activity-card">
-              <h3>Recent Activity</h3>
-
-              <div className="activity-list">
-                <div className="activity-item"><span>👤</span><div><strong>Order – £2.5 (Paid)</strong><br /><small>Dec 10</small></div></div>
-                <div className="activity-item"><span>👤</span><div><strong>Order – £6.5 (Pending)</strong><br /><small>Dec 10</small></div></div>
-                {Array(7).fill(0).map((_, i) => (
-                  <div key={i} className="activity-item">
-                    <span>$</span>
-                    <div><strong>Menu Added – £9.5</strong><br /><small>Oct 31</small></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <div className="stat-card">
+            <h3>Total Reviews</h3>
+            <div className="stat-number">5</div>
           </div>
+        </div>
 
+        {/* Charts side by side */}
+        <div className="charts-row">
+          <div className="chart-box">
+            <h2>Revenue per Restaurant</h2>
+            <Bar
+              data={revenueData}
+              options={{
+                responsive: true,
+                plugins: { legend: { display: true }, title: { display: true, text: "Revenue per Restaurant" } },
+              }}
+            />
+          </div>
+          <div className="chart-box">
+            <h2>Popular Menu Items</h2>
+            <Pie
+              data={popularMenuData}
+              options={{
+                responsive: true,
+                plugins: { legend: { display: true, position: "bottom" }, title: { display: true, text: "Popular Menu Items" } },
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Courier Performance */}
+        <div className="chart-box">
+          <h2>Courier Performance</h2>
+          <Bar
+            data={courierPerformanceData}
+            options={{
+              responsive: true,
+              plugins: { legend: { display: true }, title: { display: true, text: "Courier Performance" } },
+            }}
+          />
         </div>
       </div>
-    </>
+    </div>
   );
 }

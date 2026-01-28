@@ -89,8 +89,11 @@ export default function Payments() {
         <a className="menu-item" href="adminorder">🧾 Orders</a>
         <a className="menu-item active" href="adminpayment">💳 Payments</a>
         <a className="menu-item" href="adminAnalytics">📊 Analytics</a>
-        <a className="menu-item" href="adminmenulist">🍽️ Menu Items</a>
+        <a className="menu-item" href="adminmenulist">🏪 Restaurants & Stores</a>
+        <a className="menu-item" href="adminsubmissions">📝 Submissions</a>
+        <a className="menu-item" href="admincouriers">🏍️ Courier Management</a>
         <a className="menu-item" href="adminreviews">⭐ Reviews</a>
+        <a className="menu-item" href="adminwallet">⚙️ Wallet</a>
         <a className="menu-item" href="adminsetting">⚙️ Settings</a>
         <a className="menu-item logout" href="adminindex">🚪 Logout</a>
       </div>

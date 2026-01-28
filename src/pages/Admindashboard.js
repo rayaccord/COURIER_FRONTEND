@@ -1,212 +1,295 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import Chart from "chart.js/auto";
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
+
+  const monthlyChart = useRef(null);
+  const revenueChart = useRef(null);
+  const statusChart = useRef(null);
+
+  const charts = useRef([]);
+
+  /* ---------------- Responsive ---------------- */
   useEffect(() => {
-    // MONTHLY SALES CHART
-    new Chart(document.getElementById("monthlySalesChart"), {
-      type: "line",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [
-          {
-            label: "Total",
-            data: [40, 35, 25, 10, 5, 0],
-            borderColor: "cyan",
-            borderWidth: 2,
-          },
-        ],
-      },
-      options: { responsive: true },
-    });
+    const onResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      setSidebarOpen(!mobile);
+    };
 
-    // REVENUE CHART
-    new Chart(document.getElementById("revenueChart"), {
-      type: "line",
-      data: {
-        labels: ["Today", "This Week", "This Year"],
-        datasets: [
-          {
-            label: "Total",
-            data: [5, 12, 55],
-            borderColor: "lime",
-            borderWidth: 2,
-          },
-        ],
-      },
-      options: { responsive: true },
-    });
-
-    // STATUS PIE CHART
-    new Chart(document.getElementById("statusChart"), {
-      type: "pie",
-      data: {
-        labels: ["Delivered 57%", "Pending 43%", "Cancelled"],
-        datasets: [
-          {
-            data: [57, 43, 0],
-            backgroundColor: ["green", "yellow", "red"],
-          },
-        ],
-      },
-      options: { responsive: true },
-    });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // Sidebar toggle
-  const toggleSidebar = () => {
-    const sidebar = document.getElementById("sidebar");
-    sidebar.classList.toggle("show");
-    document.body.classList.toggle("sidebar-open");
+  /* ---------------- Charts ---------------- */
+  useEffect(() => {
+    charts.current.forEach(c => c.destroy());
+    charts.current = [];
+
+    if (monthlyChart.current) {
+      charts.current.push(
+        new Chart(monthlyChart.current, {
+          type: "line",
+          data: {
+            labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+            datasets: [
+              {
+                label: "Orders",
+                data: [40, 35, 25, 10, 5, 0],
+                borderColor: "#00ffff",
+                tension: 0.4
+              }
+            ]
+          }
+        })
+      );
+    }
+
+    if (revenueChart.current) {
+      charts.current.push(
+        new Chart(revenueChart.current, {
+          type: "line",
+          data: {
+            labels: ["Today", "This Week", "This Year"],
+            datasets: [
+              {
+                label: "Revenue (£)",
+                data: [5, 12, 55],
+                borderColor: "#00ff88",
+                tension: 0.4
+              }
+            ]
+          }
+        })
+      );
+    }
+
+    if (statusChart.current) {
+      charts.current.push(
+        new Chart(statusChart.current, {
+          type: "pie",
+          data: {
+            labels: ["Delivered", "Pending", "Cancelled"],
+            datasets: [
+              {
+                data: [57, 43, 0],
+                backgroundColor: ["#00ff88", "#ffaa00", "#ff4444"]
+              }
+            ]
+          }
+        })
+      );
+    }
+
+    return () => charts.current.forEach(c => c.destroy());
+  }, []);
+
+  /* ---------------- Logout ---------------- */
+  const logout = () => {
+    // clear auth/session here
+    navigate("/adminindex");
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#080f1a", color: "white" }}>
-      {/* Hamburger */}
-      <div
-        className="hamburger"
-        onClick={toggleSidebar}
-        style={{
-          display: "none",
-          position: "fixed",
-          top: "15px",
-          left: "15px",
-          zIndex: 1000,
-          cursor: "pointer",
-          flexDirection: "column",
-          gap: "5px",
-        }}
-      >
-        <div style={{ width: "30px", height: "4px", background: "white", borderRadius: "2px" }} />
-        <div style={{ width: "30px", height: "4px", background: "white", borderRadius: "2px" }} />
-        <div style={{ width: "30px", height: "4px", background: "white", borderRadius: "2px" }} />
-      </div>
+    <div style={layout}>
+      {/* Mobile Toggle */}
+      {isMobile && (
+        <div style={hamburger} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <div /><div /><div />
+        </div>
+      )}
 
       {/* Sidebar */}
-      <div
-        className="sidebar"
-        id="sidebar"
-        style={{
-          width: "250px",
-          background: "#050910",
-          padding: "20px 10px",
-          display: "flex",
-          flexDirection: "column",
-          transition: "transform 0.3s ease",
-        }}
-      >
-        <h2 style={{ background: "#ff3333", padding: "10px", marginBottom: "20px", borderRadius: "5px", textAlign: "center", fontSize: "1.2rem" }}>
-          Admin Panel
-        </h2>
+      <aside style={{ ...sidebar, display: sidebarOpen ? "flex" : "none" }}>
+        <h2 style={logo}>Admin Panel</h2>
 
-        <a className="nav-link active" href="admindashboard" style={linkStyle}>🏠 Home</a>
-        <a className="nav-link" href="adminorder" style={linkStyle}>📦 Orders</a>
-        <a className="nav-link" href="adminpayment" style={linkStyle}>💳 Payments</a>
-        <a className="nav-link" href="adminAnalytics" style={linkStyle}>📊 Analytics</a>
-        <a className="nav-link" href="adminmenulist" style={linkStyle}>🍽️ Menu Items</a>
-        <a className="nav-link" href="adminreviews" style={linkStyle}>⭐ Reviews</a>
-        <a className="nav-link" href="adminsetting" style={linkStyle}>⚙️ Settings</a>
-        <a className="logout-btn" href="adminindex" style={logoutStyle}>🚪 Logout</a>
-      </div>
+        <SidebarLink to="/admindashboard" icon="🏠" label="Dashboard" />
+        <SidebarLink to="/adminorder" icon="📦" label="Orders" />
+        <SidebarLink to="/adminpayment" icon="💳" label="Payments" />
+        <SidebarLink to="/adminanalytics" icon="📊" label="Analytics" />
+        <SidebarLink to="/adminmenulist" icon="🏪" label="Restaurants & Stores" />
+        <SidebarLink to="/adminsubmissions" icon="📝" label="Submissions" />
+        <SidebarLink to="/admincouriers" icon="🏍️ " label="Courier Management" />
+        <SidebarLink to="/adminreviews" icon="⭐" label="Reviews" />
+        <SidebarLink to="/adminwallet" icon="💰" label="Wallet" />
+        <SidebarLink to="/adminsetting" icon="⚙️" label="Settings" />
 
-      {/* Main Content */}
-      <div className="main-content" style={{ flex: 1, padding: "25px", overflowY: "auto", transition: "all 0.3s ease" }}>
-        {/* Notification Icon */}
-        <div className="top-right-notification" style={{ position: "absolute", top: "20px", right: "25px", fontSize: "24px" }}>
-          <a href="dashboard-notification.html" style={{ textDecoration: "none", color: "white" }}>🔔</a>
+        <button onClick={logout} style={logoutBtn}>
+          🚪 Logout
+        </button>
+      </aside>
+
+      {/* Main */}
+      <main style={content}>
+        {/* Stats */}
+        <div style={statsRow}>
+          <StatCard title="Total Orders" value="50" />
+          <StatCard title="Total Revenue" value="£0.00" />
         </div>
 
-        <div className="top-cards" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-          <div className="card" style={cardStyle}>
-            <h3>Total Orders</h3>
-            <p>50</p>
-          </div>
-          <div className="card" style={cardStyle}>
-            <h3>Total Revenue</h3>
-            <p>£0.00</p>
-          </div>
+        {/* Charts */}
+        <div style={chartsRow}>
+          <ChartCard title="Monthly Sales">
+            <canvas ref={monthlyChart} />
+          </ChartCard>
+
+          <ChartCard title="Revenue Overview">
+            <canvas ref={revenueChart} />
+          </ChartCard>
+
+          <ChartCard title="Order Status">
+            <canvas ref={statusChart} />
+          </ChartCard>
         </div>
 
-        <div className="charts" style={{ display: "flex", gap: "20px", marginTop: "25px", flexWrap: "wrap" }}>
-          <div className="chart-box" style={chartBoxStyle}>
-            <h3>Monthly Sales</h3>
-            <canvas id="monthlySalesChart"></canvas>
-          </div>
-          <div className="chart-box" style={chartBoxStyle}>
-            <h3>Revenue Overview</h3>
-            <canvas id="revenueChart"></canvas>
-          </div>
-          <div className="chart-box" style={chartBoxStyle}>
-            <h3>Order Status Breakdown</h3>
-            <canvas id="statusChart"></canvas>
-          </div>
-        </div>
+        {/* Activity */}
+        <section style={activityBox}>
+          <h3>Recent Activity</h3>
 
-        <div className="recent-activity-container" style={{ width: "100%", margin: "40px 0", background: "rgba(255,255,255,0.04)", padding: "25px", borderRadius: "12px" }}>
-          <h2 className="section-title" style={{ textAlign: "center", marginBottom: "20px", fontSize: "22px", fontWeight: "bold" }}>Recent Activity</h2>
-          <div className="activity-list" style={{ maxHeight: "420px", overflowY: "auto", paddingRight: "10px" }}>
-            {recentActivity.map((activity, idx) => (
-              <div key={idx} className="activity-item" style={{ display: "flex", alignItems: "flex-start", gap: "15px", padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <span className="icon" style={{ fontSize: "22px", opacity: 0.9, color: activity.money ? "#00ff88" : "inherit" }}>{activity.icon}</span>
-                <div>
-                  <p className="activity-title" style={{ fontSize: "15px", fontWeight: 600 }}>{activity.title}</p>
-                  <p className="activity-time" style={{ fontSize: "13px", opacity: 0.7 }}>{activity.time}</p>
-                </div>
+          {recentActivity.map((item, index) => (
+            <div key={index} style={activityItem}>
+              <span>{item.icon}</span>
+              <div>
+                <p>{item.title}</p>
+                <small>{item.time}</small>
               </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
+            </div>
+          ))}
+        </section>
+      </main>
     </div>
   );
 }
 
-// Styles
-const linkStyle = {
-  display: "block",
-  padding: "12px 15px",
-  margin: "5px 0",
-  textDecoration: "none",
-  color: "white",
-  borderRadius: "6px",
-  transition: ".3s",
-  fontSize: "0.9rem",
+/* ---------------- Components ---------------- */
+
+const SidebarLink = ({ to, icon, label }) => (
+  <NavLink
+    to={to}
+    end
+    style={({ isActive }) => ({
+      ...menuLink,
+      background: isActive ? "#ff3333" : "transparent"
+    })}
+  >
+    {icon} {label}
+  </NavLink>
+);
+
+const StatCard = ({ title, value }) => (
+  <div style={statCard}>
+    <h4>{title}</h4>
+    <p>{value}</p>
+  </div>
+);
+
+const ChartCard = ({ title, children }) => (
+  <div style={chartCard}>
+    <h4>{title}</h4>
+    {children}
+  </div>
+);
+
+/* ---------------- Styles ---------------- */
+
+const layout = {
+  display: "flex",
+  minHeight: "100vh",
+  background: "#080f1a",
+  color: "#fff"
 };
 
-const logoutStyle = {
-  marginTop: "10px",
-  background: "#e60000",
+const sidebar = {
+  width: 250,
+  background: "#050910",
+  padding: 20,
+  flexDirection: "column"
+};
+
+const logo = {
+  background: "#ff3333",
+  padding: 12,
+  borderRadius: 6,
   textAlign: "center",
-  padding: "12px",
-  color: "white",
+  marginBottom: 20
+};
+
+const menuLink = {
+  padding: "12px 15px",
+  marginBottom: 6,
+  borderRadius: 6,
   textDecoration: "none",
-  borderRadius: "6px",
-  transition: ".3s",
-  fontSize: "0.9rem",
+  color: "#fff",
+  fontSize: 14,
+  transition: "0.3s"
 };
 
-const cardStyle = {
-  background: "rgba(255,255,255,0.03)",
-  padding: "20px",
-  borderRadius: "10px",
-  flex: "1 1 200px",
+const logoutBtn = {
+  marginTop: "auto",
+  padding: 12,
+  background: "transparent",
+  color: "#ff5555",
+  border: "1px solid #ff3333",
+  borderRadius: 6,
+  cursor: "pointer"
 };
 
-const chartBoxStyle = {
+const content = { flex: 1, padding: 25 };
+
+const statsRow = { display: "flex", gap: 20, flexWrap: "wrap" };
+const statCard = {
+  background: "rgba(255,255,255,0.05)",
+  padding: 20,
+  borderRadius: 10,
+  flex: 1
+};
+
+const chartsRow = {
+  display: "flex",
+  gap: 20,
+  marginTop: 25,
+  flexWrap: "wrap"
+};
+
+const chartCard = {
+  background: "rgba(255,255,255,0.05)",
+  padding: 20,
+  borderRadius: 10,
+  flex: 1,
+  minWidth: 280
+};
+
+const activityBox = {
+  marginTop: 40,
   background: "rgba(255,255,255,0.04)",
-  padding: "20px",
-  borderRadius: "10px",
-  flex: "1",
-  minWidth: "300px",
+  padding: 20,
+  borderRadius: 10
 };
 
-// Dummy recent activity
+const activityItem = {
+  display: "flex",
+  gap: 12,
+  padding: "10px 0",
+  borderBottom: "1px solid rgba(255,255,255,0.08)"
+};
+
+const hamburger = {
+  position: "fixed",
+  top: 15,
+  left: 15,
+  cursor: "pointer",
+  zIndex: 1000
+};
+
+/* ---------------- Data ---------------- */
+
 const recentActivity = [
-  { icon: "📦", title: "Order by Guest - £NaN (Paid)", time: "Dec 10, 2025 2:05 AM" },
-  { icon: "📦", title: "Order by Guest - £NaN (Pending)", time: "Dec 10, 2025 1:53 AM" },
-  { icon: "📦", title: "Order by Guest - £NaN (Pending)", time: "Dec 10, 2025 1:53 AM" },
-  { icon: "📦", title: "Order by Guest - £NaN (Pending)", time: "Dec 10, 2025 1:53 AM" },
-  { icon: "📦", title: "Order by Guest - £NaN (Pending)", time: "Dec 10, 2025 1:53 AM" },
-  { icon: "💰", money: true, title: "Menu added: Beef pepper soup - £15.00", time: "Oct 24, 2025 6:28 AM" },
+  { icon: "📦", title: "Order by Guest – Paid", time: "Dec 10, 2025 2:05 AM" },
+  { icon: "📦", title: "Order by Guest – Pending", time: "Dec 10, 2025 1:53 AM" },
+  { icon: "💰", title: "Menu added: Beef Pepper Soup (£15)", time: "Oct 24, 2025" }
 ];

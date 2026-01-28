@@ -49,8 +49,14 @@ export default function Settings() {
           <li><a href="adminorder">🧾 Orders</a></li>
           <li><a href="adminpayment">💳 Payments</a></li>
           <li><a href="adminAnalytics">📊 Analytics</a></li>
-          <li><a href="adminmenulist">📋 Menu Items</a></li>
+          <li><a href="adminmenulist">🏪 Restaurants & Stores</a></li>
+          <li><a href="adminsubmissions">📝 Submissions</a></li>
+          <li><a href="admincouriers">🏍️ Courier Management</a></li>
           <li><a href="adminreviews">⭐ Reviews</a></li>
+          <li>
+  <a href="adminwallet">💰 Wallet</a>
+</li>
+
           <li className="active"><a href="adminsetting">⚙️ Settings</a></li>
           <li><a href="adminindex">🚪 Log-out</a></li>
         </ul>
@@ -59,7 +65,7 @@ export default function Settings() {
       {/* MAIN CONTENT */}
       <div className="container">
         <div className="top-right-notification">
-          <a href="#">🔔</a>
+          <a href="adminnotification">🔔</a>
         </div>
 
         <h1>Admin Settings</h1>

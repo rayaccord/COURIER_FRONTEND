@@ -25,10 +25,13 @@ import Notification from './pages/Notification';
 import AdminAnalytics from './pages/AdminAnalytics';
 import Admindashboard from './pages/Admindashboard';
 import Adminindex from './pages/Adminindex';
+import Adminsubmissions from './pages/Adminsubmissions';
+import Admincouriers from './pages/Admincouriers';
 import Adminorder from './pages/Adminorder';
 import Adminpayment from './pages/Adminpayment';
 import Adminmenulist from './pages/Adminmenulist';
 import Adminreviews from './pages/Adminreviews';
+import Adminwallet from './pages/Adminwallet';
 import Adminsetting from './pages/Adminsetting';
 import Adminnotification from './pages/Adminnotification';
 import Signup from './pages/Signup';
@@ -68,10 +71,13 @@ function App() {
       <Route path="/adminAnalytics" element={<AdminAnalytics />} />
       <Route path="/admindashboard" element={<Admindashboard />} />
       <Route path="/adminindex" element={<Adminindex />} />
+      <Route path="/adminsubmissions" element={<Adminsubmissions />} />
+      <Route path="/admincouriers" element={<Admincouriers />} />
       <Route path="/adminorder" element={<Adminorder />} />
       <Route path="/adminpayment" element={<Adminpayment />} />
       <Route path="/adminmenulist" element={<Adminmenulist />} />
       <Route path="/adminreviews" element={<Adminreviews />} />
+      <Route path="/adminwallet" element={<Adminwallet />} />
       <Route path="/adminsetting" element={<Adminsetting />} />
       <Route path="/adminnotification" element={<Adminnotification />} />
       <Route path="/signup" element={<Signup />} />
