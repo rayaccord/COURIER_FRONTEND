@@ -42,6 +42,13 @@ import Restaurantdashboardsignin from './pages/Restaurantdashboardsignin';
 import Restaurantdashboardforgotpassword from './pages/restaurantdashboardforgotpassword';
 import Restaurantdashboardcreateaccount from './pages/Restaurantdashboardcreateaccount';
 import Restaurantdashboard from './pages/Restaurantdashboard';
+import CourierLogin from './courier/Courierlogin';
+import Couriercreateaccount from './courier/Couriercreateaccount';
+import Courierconfirmcode from './courier/Courierconfirmcode';
+import Courierforgetpassword from './courier/Courierforgetpassword';
+import Courierresetpasswordcode from './courier/Courierresetpasswordcode';
+import Couriernewpassword from './courier/Couriernewpassword';
+import Courierdashboard from './courier/Courierdashboard';
 
 
 function App() {
@@ -84,10 +91,21 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgotpassword" element={<Forgotpassword />} />
       <Route path="/wallet" element={<Wallet />} />
+
+      {/* Restaurant Dashboard */}
       <Route path="/restaurantdashboardsignin" element={<Restaurantdashboardsignin />} />
       <Route path="/restaurantdashboardforgotpassword" element={<Restaurantdashboardforgotpassword />} />
       <Route path="/restaurantdashboardcreateaccount" element={<Restaurantdashboardcreateaccount />} />
       <Route path="/restaurantdashboard" element={<Restaurantdashboard />} />
+
+      {/* Courier */}
+      <Route path="/courierLogin" element={<CourierLogin />} />
+      <Route path="/couriercreateaccount" element={<Couriercreateaccount />} />
+      <Route path="/courierconfirmcode" element={<Courierconfirmcode />} />
+      <Route path="/courierforgetpassword" element={<Courierforgetpassword />} />
+      <Route path="/courierresetpasswordcode" element={<Courierresetpasswordcode />} />
+      <Route path="/couriernewpassword" element={<Couriernewpassword />} />
+      <Route path="/courierdashboard" element={<Courierdashboard />} />
     </Routes>
   );
 }
