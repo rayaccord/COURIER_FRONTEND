@@ -9,190 +9,100 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ margin: 0, padding: 0 }}>
-      <style>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-          font-family: Arial, sans-serif;
-        }
-        body {
-          background: #0b1524;
-          color: white;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-        .navbar {
-          width: 100%;
-          padding: 15px 5%;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .logo img {
-          width: clamp(45px, 6vw, 70px);
-        }
-        .nav-links {
-          display: flex;
-          list-style: none;
-          gap: clamp(15px, 3vw, 40px);
-        }
-        .nav-links a {
-          text-decoration: none;
-          color: white;
-          font-size: clamp(14px, 1.2vw, 17px);
-          transition: .3s;
-        }
-        .nav-links a:hover {
-          color: orange;
-        }
-        .hamburger {
-          display: none;
-          font-size: 30px;
-          cursor: pointer;
-        }
-        #menu-toggle {
-          display: none;
-        }
-        .login-container {
-          flex: 1;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 20px;
-        }
-        .login-box {
-          width: min(90%, 380px);
-          padding: 30px;
-          background: rgba(255, 255, 255, 0.06);
-          border-radius: 12px;
-          text-align: center;
-        }
-        .avatar span {
-          font-size: clamp(50px, 10vw, 70px);
-          margin-bottom: 20px;
-          display: inline-block;
-        }
-        input {
-          width: 100%;
-          padding: 14px;
-          margin-top: 14px;
-          border-radius: 6px;
-          border: none;
-          outline: none;
-          font-size: 15px;
-        }
-        .password-container {
-          position: relative;
-        }
-        .eye {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          cursor: pointer;
-          font-size: 18px;
-        }
-        #loginBtn {
-          width: 100%;
-          margin-top: 20px;
-          padding: 14px;
-          background: orange;
-          border: none;
-          border-radius: 6px;
-          font-size: 17px;
-          color: white;
-          cursor: pointer;
-        }
-        #loginBtn:hover {
-          opacity: .9;
-        }
-        .forgot {
-          margin-top: 15px;
-          font-size: 14px;
-        }
-        .forgot a {
-          color: #4da4ff;
-          text-decoration: none;
-        }
-
-        @media (max-width: 700px) {
-          .hamburger {
-            display: block;
-            color: white;
-          }
-          .nav-links {
-            position: absolute;
-            top: 75px;
-            right: 0;
-            background: #0f1c33;
-            width: 100%;
-            flex-direction: column;
-            text-align: center;
-            padding: 20px 0;
-            display: none;
-          }
-          .nav-links a {
-            padding: 15px 0;
-            font-size: 18px;
-            display: block;
-          }
-          #menu-toggle:checked ~ .nav-links {
-            display: flex;
-          }
-        }
-
-        @media (max-width: 400px) {
-          .login-box { padding: 20px; }
-          #loginBtn { font-size: 15px; }
-        }
-      `}</style>
-
-      {/* NAVBAR */}
-      <nav className="navbar">
-        <div className="logo">
-                <img src={logo} className="logo" alt="Hooks Food" />
+    <div className="min-h-screen flex flex-col bg-[#0b1524] text-white">
+      {/* Navbar */}
+      <nav className="w-full flex items-center justify-between px-5 py-4 relative">
+        <div className="flex items-center">
+          <img src={logo} alt="Hooks Food" className="w-[45px] sm:w-[6vw] md:w-[70px]" />
         </div>
 
-        <input type="checkbox" id="menu-toggle" />
-        <label htmlFor="menu-toggle" className="hamburger">
+        {/* Hamburger for mobile */}
+        <input type="checkbox" id="menu-toggle" className="hidden" />
+        <label
+          htmlFor="menu-toggle"
+          className="hamburger cursor-pointer text-3xl md:hidden"
+        >
           &#9776;
         </label>
+
+        {/* Nav links */}
+        <ul className="nav-links hidden md:flex gap-6 list-none">
+          <li>
+            <a href="#" className="hover:text-orange-500 transition">
+              Home
+            </a>
+          </li>
+          <li>
+            <a href="#" className="hover:text-orange-500 transition">
+              About
+            </a>
+          </li>
+          <li>
+            <a href="#" className="hover:text-orange-500 transition">
+              Contact
+            </a>
+          </li>
+        </ul>
       </nav>
 
-      {/* LOGIN BOX */}
-      <div className="login-container">
-        <div className="login-box">
-          <div className="avatar">
-            <span>&#128100;</span>
+      {/* Login Box */}
+      <div className="flex flex-1 justify-center items-center p-5">
+        <div className="login-box w-full max-w-sm bg-white/5 p-8 rounded-xl text-center">
+          <div className="avatar mb-5">
+            <span className="text-[50px] sm:text-[10vw] md:text-[70px] inline-block">&#128100;</span>
           </div>
 
-          <input type="email" placeholder="Email" />
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 mb-4 rounded-md bg-white/10 text-white placeholder-gray-300 focus:outline-none"
+          />
 
-          <div className="password-container">
-            <input 
-              type={showPassword ? "text" : "password"} 
-              placeholder="Password" 
+          <div className="relative mb-4">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              className="w-full p-3 rounded-md bg-white/10 text-white placeholder-gray-300 focus:outline-none"
             />
             <span
-              className="eye"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-lg"
               onClick={() => setShowPassword(!showPassword)}
             >
               &#128065;
             </span>
           </div>
 
-          <button id="loginBtn" onClick={handleLogin}>
+          <button
+            onClick={handleLogin}
+            className="w-full py-3 bg-orange-500 rounded-md text-white font-semibold hover:opacity-90 transition"
+          >
             Login
           </button>
 
-          <p className="forgot">
-            Forgot password? <a href="#">Reset here</a>
+          <p className="mt-4 text-sm">
+            Forgot password?{" "}
+            <a href="#" className="text-blue-400 hover:underline">
+              Reset here
+            </a>
           </p>
         </div>
       </div>
+
+      {/* Mobile Menu (hidden by default) */}
+      <style>{`
+        #menu-toggle:checked ~ .nav-links {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          position: absolute;
+          top: 60px;
+          right: 0;
+          width: 100%;
+          background: #0f1c33;
+          padding: 20px 0;
+          gap: 4;
+        }
+      `}</style>
     </div>
   );
 }

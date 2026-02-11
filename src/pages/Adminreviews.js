@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export default function Reviews() {
   useEffect(() => {
@@ -13,7 +14,7 @@ export default function Reviews() {
 
     const toggleSidebar = () => {
       hamburger.classList.toggle("active");
-      sidebar.classList.toggle("show");
+      sidebar.classList.toggle("translate-x-0");
     };
 
     hamburger.addEventListener("click", toggleSidebar);
@@ -21,7 +22,7 @@ export default function Reviews() {
     const clickOutside = (e) => {
       if (window.innerWidth <= 768) {
         if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
-          sidebar.classList.remove("show");
+          sidebar.classList.remove("translate-x-0");
           hamburger.classList.remove("active");
         }
       }
@@ -37,97 +38,83 @@ export default function Reviews() {
     };
   }, []);
 
+  const reviews = [
+    { name: "Stanley Moore", location: "London", date: "24 Oct 2025 - 00:14", stars: "★★★★★", text: "Thanks for the safe delivery and quick response. Amazing food, best African soup I had all year." },
+    { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
+    { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
+    { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
+    { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
+    { name: "Olayinka Demeola", location: "Lagos", date: "18 Sept 2025 - 06:41", stars: "★★★★★", text: "Super" }
+  ];
+
   return (
-    <div className="reviews-root">
-      <style>{`
-        body { margin:0; font-family:Poppins,sans-serif; background:#000814; color:#fff }
-        .sidebar { width:240px; background:#001d3d; height:100vh; position:fixed; top:0; left:0; padding-top:20px; overflow-y:auto; transition:0.3s }
-        .sidebar h2 { margin-left:20px; font-size:20px; margin-bottom:20px }
-        .sidebar ul { list-style:none; padding:0 }
-        .sidebar ul li { padding:12px 20px }
-        .sidebar ul li:hover, .sidebar ul .active { background:#1f3354 }
-        .sidebar ul li a { text-decoration:none; color:#fff; display:block; font-size:15px }
-        .sidebar ul li a:hover { color:#a8c6ff }
-        .hamburger { display:none; position:fixed; top:20px; left:20px; z-index:1100; flex-direction:column; gap:5px; cursor:pointer }
-        .hamburger div { width:32px; height:3px; background:#ff5139; transition:0.3s }
-        .hamburger.active div:nth-child(1){ transform: rotate(45deg) translate(6px,6px) }
-        .hamburger.active div:nth-child(2){ opacity:0 }
-        .hamburger.active div:nth-child(3){ transform: rotate(-45deg) translate(6px,-6px) }
-        .container { margin-left:260px; padding:30px; transition:0.3s }
-        h1 { text-align:center; margin-bottom:25px; font-size:26px; color:#ffb088 }
-        .review-box { background:#002447; padding:20px; border-radius:8px; margin-bottom:20px; position:relative; transition:0.3s }
-        .review-header { display:flex; justify-content:space-between; margin-bottom:5px; flex-wrap:wrap }
-        .name-location { font-weight:600; font-size:15px }
-        .date { font-size:12px; color:#bbb }
-        .stars { color:gold; margin:8px 0; font-size:18px }
-        .actions { position:absolute; top:15px; right:15px }
-        .actions i { margin-left:12px; cursor:pointer; font-size:18px }
-        .actions .delete { color:#ff4d4d }
-        .actions .edit { color:#4da6ff }
-        footer { text-align:center; margin-top:40px; padding-bottom:20px; color:#aaa; font-size:12px }
-        @media(max-width:900px){.container{margin-left:0;padding:20px}}
-        @media(max-width:768px){.hamburger{display:flex}.sidebar{transform:translateX(-100%)}.sidebar.show{transform:translateX(0)}.container{margin-left:0}.review-box{padding:15px}.actions{top:10px;right:10px}}
-        @media(max-width:480px){h1{font-size:20px}.name-location{font-size:14px}.review-box p{font-size:14px}.stars{font-size:16px}}
-        .top-right-notification { position:absolute; top:20px; right:25px; font-size:24px }
-        .top-right-notification a { text-decoration:none; color:white; transition:0.3s }
-        .top-right-notification a:hover { color:#ff6b00 }
-      `}</style>
+    <div className="flex bg-[#000814] text-white min-h-screen">
+      {/* Sidebar */}
+      <aside
+        id="sidebar"
+        className="fixed top-0 left-0 h-full w-60 bg-[#001d3d] p-5 flex flex-col space-y-2 overflow-y-auto transform -translate-x-full md:translate-x-0 transition-transform z-50"
+      >
+        <h2 className="text-xl font-bold mb-6 ml-1">Admin Panel</h2>
+        <SidebarLink to="/admindashboard" icon="🏠" label="Home" />
+        <SidebarLink to="/adminorder" icon="🧾" label="Orders" />
+        <SidebarLink to="/adminpayment" icon="💳" label="Payments" />
+        <SidebarLink to="/adminAnalytics" icon="📊" label="Analytics" />
+        <SidebarLink to="/adminmenulist" icon="🏪" label="Restaurants & Stores" />
+        <SidebarLink to="/adminsubmissions" icon="📝" label="Submissions" />
+        <SidebarLink to="/admincouriers" icon="🏍️" label="Courier Management" />
+        <SidebarLink to="/adminreviews" icon="⭐" label="Reviews" active />
+        <SidebarLink to="/adminwallet" icon="💰" label="Wallet" />
+        <SidebarLink to="/adminsetting" icon="⚙️" label="Settings" />
+        <SidebarLink to="/adminindex" icon="🚪" label="Log-out" danger />
+      </aside>
 
-      <div className="hamburger" id="hamburger">
-        <div></div><div></div><div></div>
+      {/* Hamburger */}
+      <div id="hamburger" className="fixed top-5 left-5 md:hidden z-50 flex flex-col gap-2 cursor-pointer">
+        <div className="w-8 h-1 bg-orange-500 transition-transform"></div>
+        <div className="w-8 h-1 bg-orange-500 transition-opacity"></div>
+        <div className="w-8 h-1 bg-orange-500 transition-transform"></div>
       </div>
 
-      <div className="sidebar" id="sidebar">
-        <h2>Admin Panel</h2>
-        <ul>
-          <li><a href="admindashboard">🏠 Home</a></li>
-          <li><a href="adminorder">🧾 Orders</a></li>
-          <li><a href="adminpayment">💳 Payments</a></li>
-          <li><a href="adminAnalytics">📊 Analytics</a></li>
-          <li><a href="adminmenulist">🏪 Restaurants & Stores</a></li>
-          <li><a href="adminsubmissions">📝 Submissions</a></li>
-          <li><a href="admincouriers">🏍️ Courier Management</a></li>
-          <li><a href="adminreviews">⭐ Reviews</a></li>
-          <li>
-  <a href="adminwallet">💰 Wallet</a>
-</li>
-
-          <li className="active"><a href="adminsetting">⚙️ Settings</a></li>
-          <li><a href="adminindex">🚪 Log-out</a></li>
-        </ul>
-      </div>
-
-      <div className="container">
-        <div className="top-right-notification">
-          <a href="adminnotification">🔔</a>
+      {/* Main Content */}
+      <main className="flex-1 ml-0 md:ml-60 p-6 relative">
+        <div className="absolute top-5 right-6 text-2xl">
+          <a href="adminnotification" className="hover:text-orange-500 transition-colors">🔔</a>
         </div>
 
-        <h1>Customer Reviews</h1>
+        <h1 className="text-center text-2xl md:text-3xl font-bold text-orange-300 mb-8">Customer Reviews</h1>
 
-        {[
-          { name: "Stanley Moore", location: "London", date: "24 Oct 2025 - 00:14", stars: "★★★★★", text: "Thanks for the safe delivery and quick response. Amazing food, best African soup I had all year." },
-          { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
-          { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
-          { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
-          { name: "Gbenga Morife", location: "Ibadan", date: "23 Dec 2025 - 11:53", stars: "★★★☆☆", text: "Lovely" },
-          { name: "Olayinka Demeola", location: "Lagos", date: "18 Sept 2025 - 06:41", stars: "★★★★★", text: "Super" }
-        ].map((review, idx) => (
-          <div className="review-box" key={idx}>
-            <div className="review-header">
-              <div className="name-location">{review.name} – {review.location}</div>
-              <div className="date">{review.date}</div>
+        <div className="space-y-4">
+          {reviews.map((review, idx) => (
+            <div key={idx} className="bg-[#002447] p-5 md:p-6 rounded-lg relative transition-all hover:bg-[#003161]">
+              <div className="flex justify-between flex-wrap mb-2">
+                <div className="font-semibold text-sm md:text-base">{review.name} – {review.location}</div>
+                <div className="text-xs md:text-sm text-gray-400">{review.date}</div>
+              </div>
+              <div className="text-yellow-400 text-lg md:text-xl mb-2">{review.stars}</div>
+              <p className="text-sm md:text-base">{review.text}</p>
+              <div className="absolute top-3 right-3 flex gap-3 md:top-4 md:right-4">
+                <button className="delete text-red-500 text-lg md:text-xl">🗑</button>
+                <button className="edit text-blue-400 text-lg md:text-xl">✏️</button>
+              </div>
             </div>
-            <div className="stars">{review.stars}</div>
-            <p>{review.text}</p>
-            <div className="actions">
-              <i className="delete">🗑</i>
-              <i className="edit">✏️</i>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
-        <footer>© 2025 Hooks Food. All rights reserved.</footer>
-      </div>
+        <footer className="text-center text-gray-400 text-xs md:text-sm mt-10 pb-4">
+          © 2025 Hooks Food. All rights reserved.
+        </footer>
+      </main>
     </div>
   );
 }
+
+/* ---------------- Sidebar Link Component ---------------- */
+const SidebarLink = ({ to, icon, label, active, danger }) => (
+  <Link
+    to={to}
+    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors
+      ${danger ? "text-red-500 hover:bg-red-600" : active ? "bg-blue-700 text-white" : "text-gray-300 hover:bg-[#1f3354] hover:text-white"}`}
+  >
+    <span>{icon}</span> {label}
+  </Link>
+);

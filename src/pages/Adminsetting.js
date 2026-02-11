@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Settings() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -14,77 +15,101 @@ export default function Settings() {
   };
 
   return (
-    <div className="settings-root">
-      <style>{`
-        :root{--primary:#ff6b00;--bg:#000814;--panel:#001d3d;--text:#fff}
-        body{margin:0;font-family:Arial,sans-serif;display:flex;background:var(--bg);color:var(--text)}
-        .sidebar{width:230px;background:var(--panel);height:100vh;padding-top:20px;position:fixed;transition:0.3s;left:0}
-        .sidebar ul{list-style:none;padding:0;margin-top:20px}
-        .sidebar ul li{padding:12px 20px;cursor:pointer}
-        .sidebar ul li a{text-decoration:none;color:var(--text);display:block}
-        .sidebar ul li.active{background:rgba(255,107,0,0.25);border-left:4px solid var(--primary)}
-        .container{margin-left:250px;padding:40px;width:calc(100% - 250px)}
-        h1{text-align:center;font-size:26px}
-        .settings-box{background:var(--panel);padding:30px;border-radius:12px;max-width:600px;margin:40px auto}
-        input{width:100%;padding:12px;border-radius:8px;border:none;margin-bottom:20px;background:rgba(255,255,255,0.08);color:var(--text)}
-        #preview{width:80px;height:80px;border-radius:50%;object-fit:cover;display:block;margin-bottom:10px}
-        .upload-btn{background:var(--primary);padding:10px 16px;border-radius:8px;border:none;color:#fff;cursor:pointer;margin-bottom:20px}
-        .save-btn{background:#00a651;padding:12px;border-radius:8px;border:none;color:#fff;width:100%;cursor:pointer}
-        footer{text-align:center;margin-top:30px;opacity:0.6}
-        .menu-btn{display:none;position:fixed;left:20px;top:20px;z-index:1000;font-size:30px;cursor:pointer;color:var(--text)}
-        .top-right-notification{position:absolute;top:20px;right:25px;font-size:24px}
-        .top-right-notification a{text-decoration:none;color:white;transition:0.3s}
-        .top-right-notification a:hover{color:#ff6b00}
-        @media(max-width:768px){.sidebar{left:-250px}.sidebar.show{left:0}.container{margin-left:0;width:100%;padding-top:70px}.menu-btn{display:block}}
-      `}</style>
+    <div className="flex bg-[#000814] text-white min-h-screen">
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-60 bg-[#001d3d] p-5 flex flex-col space-y-2 transition-transform z-50
+          ${sidebarVisible ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+      >
+        <h2 className="text-xl font-bold mb-6 ml-1">Admin Panel</h2>
+        <SidebarLink to="/admindashboard" icon="🏠" label="Home" />
+        <SidebarLink to="/adminorder" icon="🧾" label="Orders" />
+        <SidebarLink to="/adminpayment" icon="💳" label="Payments" />
+        <SidebarLink to="/adminAnalytics" icon="📊" label="Analytics" />
+        <SidebarLink to="/adminmenulist" icon="🏪" label="Restaurants & Stores" />
+        <SidebarLink to="/adminsubmissions" icon="📝" label="Submissions" />
+        <SidebarLink to="/admincouriers" icon="🏍️" label="Courier Management" />
+        <SidebarLink to="/adminreviews" icon="⭐" label="Reviews" />
+        <SidebarLink to="/adminwallet" icon="💰" label="Wallet" />
+        <SidebarLink to="/adminsetting" icon="⚙️" label="Settings" active />
+        <SidebarLink to="/adminindex" icon="🚪" label="Log-out" danger />
+      </aside>
 
-      {/* MOBILE MENU BUTTON */}
-      <div className="menu-btn" onClick={toggleSidebar}>{sidebarVisible ? "✖" : "☰"}</div>
-
-      {/* SIDEBAR */}
-      <div className={`sidebar ${sidebarVisible ? "show" : ""}`}>
-        <h2>Admin Panel</h2>
-        <ul>
-          <li><a href="admindashboard">🏠 Home</a></li>
-          <li><a href="adminorder">🧾 Orders</a></li>
-          <li><a href="adminpayment">💳 Payments</a></li>
-          <li><a href="adminAnalytics">📊 Analytics</a></li>
-          <li><a href="adminmenulist">🏪 Restaurants & Stores</a></li>
-          <li><a href="adminsubmissions">📝 Submissions</a></li>
-          <li><a href="admincouriers">🏍️ Courier Management</a></li>
-          <li><a href="adminreviews">⭐ Reviews</a></li>
-          <li>
-  <a href="adminwallet">💰 Wallet</a>
-</li>
-
-          <li className="active"><a href="adminsetting">⚙️ Settings</a></li>
-          <li><a href="adminindex">🚪 Log-out</a></li>
-        </ul>
+      {/* Hamburger */}
+      <div
+        className="fixed top-5 left-5 md:hidden z-50 cursor-pointer text-2xl"
+        onClick={toggleSidebar}
+      >
+        {sidebarVisible ? "✖" : "☰"}
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="container">
-        <div className="top-right-notification">
-          <a href="adminnotification">🔔</a>
+      {/* Main Content */}
+      <main className="flex-1 ml-0 md:ml-60 p-6 relative">
+        <div className="absolute top-5 right-6 text-2xl">
+          <a href="adminnotification" className="hover:text-orange-500 transition-colors">🔔</a>
         </div>
 
-        <h1>Admin Settings</h1>
+        <h1 className="text-center text-2xl md:text-3xl font-bold text-orange-300 mb-8">
+          Admin Settings
+        </h1>
 
-        <div className="settings-box">
-          <label>Full Name</label>
-          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+        <div className="bg-[#001d3d] rounded-lg p-6 md:p-8 max-w-lg mx-auto space-y-4">
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm font-semibold">Full Name</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="w-full p-3 rounded-lg bg-white/10 text-white focus:outline-none"
+            />
+          </div>
 
-          <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm font-semibold">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full p-3 rounded-lg bg-white/10 text-white focus:outline-none"
+            />
+          </div>
 
-          {previewSrc && <img id="preview" src={previewSrc} alt="Profile Preview" />}
-          <label>Profile Image</label>
-          <input type="file" id="upload" className="upload-btn" onChange={handleImageChange} />
+          <div className="flex flex-col items-center">
+            {previewSrc && (
+              <img
+                src={previewSrc}
+                alt="Profile Preview"
+                className="w-20 h-20 rounded-full object-cover mb-3"
+              />
+            )}
+            <label className="mb-2 text-sm font-semibold">Profile Image</label>
+            <input
+              type="file"
+              onChange={handleImageChange}
+              className="w-full text-sm text-white cursor-pointer bg-orange-600 rounded-lg py-2 px-3 mb-4"
+            />
+          </div>
 
-          <button className="save-btn">Save Changes</button>
+          <button className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+            Save Changes
+          </button>
         </div>
 
-      </div>
+        <footer className="text-center text-gray-400 text-sm mt-10 pb-4">
+          © 2025 Hooks Food. All rights reserved.
+        </footer>
+      </main>
     </div>
   );
 }
+
+/* ---------------- Sidebar Link Component ---------------- */
+const SidebarLink = ({ to, icon, label, active, danger }) => (
+  <Link
+    to={to}
+    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors
+      ${danger ? "text-red-500 hover:bg-red-600" : active ? "bg-blue-700 text-white" : "text-gray-300 hover:bg-[#1f3354] hover:text-white"}`}
+  >
+    <span>{icon}</span> {label}
+  </Link>
+);

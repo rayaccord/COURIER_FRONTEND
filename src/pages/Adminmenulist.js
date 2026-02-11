@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import burger from "../assets/burger2.jpg";
 import moi from "../assets/moi1.jpeg";
 
-const AdminRestaurantStore = () => {
+export default function AdminRestaurantStore() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
 
@@ -117,32 +117,11 @@ const AdminRestaurantStore = () => {
   };
 
   return (
-    <div style={{ background: "#000814", minHeight: "100vh", color: "#fff" }}>
-      {/* MOBILE TOGGLE */}
-      {isMobile && (
-        <div
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{ position: "fixed", top: 10, left: 10, fontSize: 24, cursor: "pointer", zIndex: 1001 }}
-        >
-          {sidebarOpen ? "✖" : "☰"}
-        </div>
-      )}
-
-      {/* SIDEBAR */}
-      <div
-        style={{
-          width: 230,
-          background: "#001d3d",
-          height: "100vh",
-          paddingTop: 20,
-          position: "fixed",
-          left: sidebarOpen ? 0 : isMobile ? -250 : 0,
-          transition: "0.3s",
-          zIndex: 1000
-        }}
-      >
-        <h2 style={{ marginLeft: 20 }}>Admin Panel</h2>
-        <ul style={{ listStyle: "none", padding: 0, marginTop: 20 }}>
+    <div className="bg-[#000814] min-h-screen text-white flex">
+      {/* Sidebar */}
+      <aside className={`bg-[#001d3d] w-56 p-5 flex flex-col fixed top-0 left-0 h-full transition-transform z-50 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+        <h2 className="mb-6 text-xl font-semibold">Admin Panel</h2>
+        <ul className="flex flex-col gap-2">
           {[
             ["🏠 Home", "/admindashboard"],
             ["🧾 Orders", "/adminorder"],
@@ -156,161 +135,138 @@ const AdminRestaurantStore = () => {
             ["⚙️ Settings", "/adminsetting"],
             ["🚪 Log-out", "/adminindex"]
           ].map(([label, path], i) => (
-            <li
-              key={i}
-              style={{
-                padding: "12px 20px",
-                background: label.includes("Restaurants") ? "rgba(255,107,0,.25)" : "transparent",
-                borderLeft: label.includes("Restaurants") ? "4px solid #ff6b00" : "none"
-              }}
-            >
-              <Link to={path} style={{ color: "#fff", textDecoration: "none" }}>
-                {label}
-              </Link>
+            <li key={i} className={`px-4 py-2 rounded ${label.includes("Restaurants") ? "bg-orange-600/30 border-l-4 border-orange-500" : ""}`}>
+              <Link to={path} className="text-white">{label}</Link>
             </li>
           ))}
         </ul>
-      </div>
+      </aside>
 
-      {/* MAIN CONTENT */}
-      <div style={{ marginLeft: isMobile ? 0 : 250, padding: 40 }}>
-        <h1 style={{ textAlign: "center", color: "#ff6b00" }}>Restaurants & Stores</h1>
+      {/* Mobile toggle */}
+      {isMobile && (
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="fixed top-4 left-4 z-50 text-2xl md:hidden"
+        >
+          {sidebarOpen ? "✖" : "☰"}
+        </button>
+      )}
 
-        <button onClick={openAddRestaurantModal} style={{ marginBottom: 20 }}>
+      {/* Main content */}
+      <main className="flex-1 ml-0 md:ml-56 p-6">
+        <h1 className="text-center text-orange-500 text-2xl mb-5">Restaurants & Stores</h1>
+        <button
+          onClick={openAddRestaurantModal}
+          className="mb-5 px-4 py-2 bg-orange-500 rounded hover:opacity-90 transition"
+        >
           ➕ Add Restaurant / Store
         </button>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 15 }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {restaurants.map((r, ri) => (
-            <div
-              key={r.id}
-              style={{
-                background: "#fff",
-                color: "#000",
-                borderRadius: 10,
-                padding: 10,
-                textAlign: "center"
-              }}
-            >
-              <img src={r.img || moi} alt={r.name} style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8 }} />
-              <h3 style={{ fontSize: 16 }}>{r.name}</h3>
-              <p style={{ fontSize: 14 }}><b>{r.type}</b></p>
-              <div style={{
-                background: r.status === "active" ? "green" : "red",
-                color: "#fff",
-                padding: 4,
-                borderRadius: 6,
-                fontSize: 12
-              }}>{r.status}</div>
+            <div key={r.id} className="bg-white text-black rounded-lg p-3 flex flex-col items-center">
+              <img src={r.img || moi} alt={r.name} className="w-full h-32 object-cover rounded mb-2" />
+              <h3 className="font-semibold">{r.name}</h3>
+              <p className="text-sm mb-1"><b>{r.type}</b></p>
+              <div className={`px-2 py-1 rounded text-xs text-white ${r.status === "active" ? "bg-green-500" : "bg-red-500"}`}>{r.status}</div>
 
-              <br />
-              <button onClick={() => openAddMenuModal(ri)} style={{ fontSize: 12 }}>➕ Add Menu</button>
+              <button onClick={() => openAddMenuModal(ri)} className="mt-2 text-xs px-2 py-1 bg-blue-500 rounded hover:opacity-90">➕ Add Menu</button>
 
-              {/* SHOW MENUS */}
-              <div style={{ marginTop: 10 }}>
+              {/* Menus */}
+              <div className="w-full mt-2 space-y-2">
                 {r.menus.map((m, mi) => (
-                  <div key={mi} style={{ background: "#e0e0e0", borderRadius: 8, padding: 6, margin: "6px 0" }}>
-                    <img src={m.img || burger} alt={m.name} style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 6 }} />
-                    <h4 style={{ fontSize: 14 }}>{m.name}</h4>
-                    <b style={{ fontSize: 12 }}>₦{m.price}</b>
-                    <div style={{
-                      background: m.status === "available" ? "green" : "red",
-                      color: "#fff",
-                      padding: 3,
-                      borderRadius: 6,
-                      fontSize: 10,
-                      marginTop: 4
-                    }}>{m.status}</div>
-                    <button onClick={() => openEditMenuModal(ri, mi)} style={{ fontSize: 10 }}>Edit</button>{" "}
-                    <button onClick={() => deleteMenu(ri, mi)} style={{ fontSize: 10 }}>Delete</button>
+                  <div key={mi} className="bg-gray-200 text-black rounded p-2">
+                    <img src={m.img || burger} alt={m.name} className="w-full h-20 object-cover rounded mb-1" />
+                    <h4 className="text-sm font-medium">{m.name}</h4>
+                    <span className="text-xs font-bold">₦{m.price}</span>
+                    <div className={`mt-1 px-1 py-0.5 rounded text-white text-[10px] ${m.status === "available" ? "bg-green-500" : "bg-red-500"}`}>{m.status}</div>
+                    <div className="flex gap-1 mt-1">
+                      <button onClick={() => openEditMenuModal(ri, mi)} className="text-[10px] px-1 py-0.5 bg-yellow-400 rounded">Edit</button>
+                      <button onClick={() => deleteMenu(ri, mi)} className="text-[10px] px-1 py-0.5 bg-red-500 rounded">Delete</button>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <br />
-              <button onClick={() => openEditRestaurantModal(ri)} style={{ fontSize: 12 }}>Edit Restaurant</button>{" "}
-              <button onClick={() => deleteRestaurant(ri)} style={{ fontSize: 12 }}>Delete Restaurant</button>
+              <div className="mt-2 flex gap-2">
+                <button onClick={() => openEditRestaurantModal(ri)} className="text-xs px-2 py-1 bg-yellow-400 rounded">Edit Restaurant</button>
+                <button onClick={() => deleteRestaurant(ri)} className="text-xs px-2 py-1 bg-red-500 rounded">Delete Restaurant</button>
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      </main>
 
-      {/* RESTAURANT MODAL */}
+      {/* Restaurant Modal */}
       {restaurantModalOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000 }}>
-          <div style={{ background: "#fff", padding: 20, borderRadius: 12, width: 300 }}>
-            <h3 style={{ color: "#ff6b00", textAlign: "center" }}>
-              {editingRestaurantIndex !== null ? "Edit" : "Add"} Restaurant / Store
-            </h3>
-
+        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
+          <div className="bg-white text-black p-5 rounded-lg w-80 flex flex-col gap-2">
+            <h3 className="text-center text-orange-500">{editingRestaurantIndex !== null ? "Edit" : "Add"} Restaurant / Store</h3>
             <input
               placeholder="Name"
               value={restaurantForm.name}
               onChange={e => setRestaurantForm({ ...restaurantForm, name: e.target.value })}
+              className="p-2 border rounded"
             />
-
             <select
               value={restaurantForm.type}
               onChange={e => setRestaurantForm({ ...restaurantForm, type: e.target.value })}
+              className="p-2 border rounded"
             >
               <option>Restaurant</option>
               <option>Store</option>
             </select>
-
             <select
               value={restaurantForm.status}
               onChange={e => setRestaurantForm({ ...restaurantForm, status: e.target.value })}
+              className="p-2 border rounded"
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
-
-            <input type="file" onChange={handleRestaurantImage} />
-
-            <button onClick={saveRestaurant}>Save</button>
-            <button onClick={() => setRestaurantModalOpen(false)}>Cancel</button>
+            <input type="file" onChange={handleRestaurantImage} className="p-1" />
+            <div className="flex justify-between mt-2">
+              <button onClick={saveRestaurant} className="px-3 py-1 bg-orange-500 rounded hover:opacity-90">Save</button>
+              <button onClick={() => setRestaurantModalOpen(false)} className="px-3 py-1 bg-gray-400 rounded hover:opacity-90">Cancel</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MENU MODAL */}
+      {/* Menu Modal */}
       {menuModalOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000 }}>
-          <div style={{ background: "#fff", padding: 20, borderRadius: 12, width: 300 }}>
-            <h3 style={{ color: "#ff6b00", textAlign: "center" }}>
-              {editingMenuIndex !== null ? "Edit" : "Add"} Menu Item
-            </h3>
-
+        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
+          <div className="bg-white text-black p-5 rounded-lg w-80 flex flex-col gap-2">
+            <h3 className="text-center text-orange-500">{editingMenuIndex !== null ? "Edit" : "Add"} Menu Item</h3>
             <input
               placeholder="Menu Name"
               value={menuForm.name}
               onChange={e => setMenuForm({ ...menuForm, name: e.target.value })}
+              className="p-2 border rounded"
             />
-
             <input
               type="number"
               placeholder="Price (₦)"
               value={menuForm.price}
               onChange={e => setMenuForm({ ...menuForm, price: e.target.value })}
+              className="p-2 border rounded"
             />
-
             <select
               value={menuForm.status}
               onChange={e => setMenuForm({ ...menuForm, status: e.target.value })}
+              className="p-2 border rounded"
             >
               <option value="available">Available</option>
               <option value="unavailable">Unavailable</option>
             </select>
-
-            <input type="file" onChange={handleMenuImage} />
-
-            <button onClick={saveMenu}>Save</button>
-            <button onClick={() => setMenuModalOpen(false)}>Cancel</button>
+            <input type="file" onChange={handleMenuImage} className="p-1" />
+            <div className="flex justify-between mt-2">
+              <button onClick={saveMenu} className="px-3 py-1 bg-orange-500 rounded hover:opacity-90">Save</button>
+              <button onClick={() => setMenuModalOpen(false)} className="px-3 py-1 bg-gray-400 rounded hover:opacity-90">Cancel</button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default AdminRestaurantStore;
+}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
+import { Link } from "react-router-dom";
 
 export default function Payments() {
   const chartRef = useRef(null);
@@ -44,141 +45,120 @@ export default function Payments() {
   }, []);
 
   const toggleSidebar = () => {
-    document.getElementById("hamburger")?.classList.toggle("active");
-    document.getElementById("sidebar")?.classList.toggle("show");
+    document.getElementById("sidebar")?.classList.toggle("translate-x-0");
   };
 
   return (
-    <div className="payments-root">
-      <style>{`
-        body { margin:0; font-family:Poppins,sans-serif; background:#1b1e27; color:#fff }
-        .sidebar { width:240px; background:#12141c; position:fixed; height:100%; left:0; top:0; padding:20px 0 }
-        .sidebar h2 { margin-left:25px; color:#ff5139 }
-        .menu-item { display:flex; gap:10px; padding:12px 25px; color:#c8c8c8; text-decoration:none }
-        .menu-item.active { background:#ff5139; color:#fff }
-        .menu-item:hover { background:#191c24 }
-        .logout { margin-top:20px; color:#ff6b6b }
-        .main { margin-left:240px; padding:25px }
-        .hamburger { display:none; position:fixed; top:20px; left:20px; z-index:20; flex-direction:column; gap:5px }
-        .hamburger div { width:30px; height:3px; background:#ff5139 }
-        .cards { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:30px }
-        .card { flex:1; min-width:150px; padding:20px; border-radius:10px }
-        .card p { font-size:22px; font-weight:600 }
-        .card1{background:#ff7f62}.card2{background:#ffcc5c}.card3{background:#4da6ff}.card4{background:#66cc7a}.card5{background:#ff6b81}
-        .chart-container{background:#ffffff11;padding:25px;border-radius:10px;margin-bottom:40px}
-        .payment-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-        .input{padding:10px;border-radius:6px;background:#ffffff22;color:#fff;border:none}
-        .btn{padding:10px 15px;border:none;border-radius:6px;font-weight:600;cursor:pointer}
-        .refresh{background:#e8453c;color:#fff}.export{background:#3cb44b;color:#fff}
-        .table-box{overflow-x:auto;background:#ffffff0d;border-radius:10px}
-        table{width:100%;min-width:700px;border-collapse:collapse}
-        th,td{padding:14px;border-bottom:1px solid #ffffff15}
-        .badge{padding:5px 10px;border-radius:20px;font-size:12px}
-        .paid{background:#7adf9c;color:#003a10}.pending{background:#eb86ab;color:#4a1133}
-        .mark-btn{padding:6px 14px;background:#48c774;border:none;border-radius:5px;color:#fff}
-        @media(max-width:768px){.hamburger{display:flex}.sidebar{transform:translateX(-100%)}.sidebar.show{transform:translateX(0)}.main{margin-left:0}}
-      `}</style>
+    <div className="flex bg-gray-900 text-white min-h-screen">
+      {/* Sidebar */}
+      <aside
+        id="sidebar"
+        className="fixed top-0 left-0 h-full w-60 bg-gray-800 p-5 flex flex-col space-y-2 transform -translate-x-full md:translate-x-0 transition-transform z-50"
+      >
+        <h2 className="text-orange-500 text-xl font-bold mb-6">Admin Panel</h2>
+        <SidebarLink to="/admindashboard" icon="🏠" label="Home" />
+        <SidebarLink to="/adminorder" icon="🧾" label="Orders" />
+        <SidebarLink to="/adminpayment" icon="💳" label="Payments" active />
+        <SidebarLink to="/adminAnalytics" icon="📊" label="Analytics" />
+        <SidebarLink to="/adminmenulist" icon="🏪" label="Restaurants & Stores" />
+        <SidebarLink to="/adminsubmissions" icon="📝" label="Submissions" />
+        <SidebarLink to="/admincouriers" icon="🏍️" label="Courier Management" />
+        <SidebarLink to="/adminreviews" icon="⭐" label="Reviews" />
+        <SidebarLink to="/adminwallet" icon="💰" label="Wallet" />
+        <SidebarLink to="/adminsetting" icon="⚙️" label="Settings" />
+        <SidebarLink to="/adminindex" icon="🚪" label="Logout" danger />
+      </aside>
 
-      <div className="hamburger" id="hamburger" onClick={toggleSidebar}>
-        <div></div><div></div><div></div>
+      {/* Hamburger */}
+      <div className="fixed top-5 left-5 md:hidden z-50 flex flex-col gap-2 cursor-pointer" onClick={toggleSidebar}>
+        <div className="w-8 h-1 bg-orange-500"></div>
+        <div className="w-8 h-1 bg-orange-500"></div>
+        <div className="w-8 h-1 bg-orange-500"></div>
       </div>
 
-      <div className="sidebar" id="sidebar">
-        <h2>Admin Panel</h2>
-        <a className="menu-item" href="admindashboard">🏠 Home</a>
-        <a className="menu-item" href="adminorder">🧾 Orders</a>
-        <a className="menu-item active" href="adminpayment">💳 Payments</a>
-        <a className="menu-item" href="adminAnalytics">📊 Analytics</a>
-        <a className="menu-item" href="adminmenulist">🏪 Restaurants & Stores</a>
-        <a className="menu-item" href="adminsubmissions">📝 Submissions</a>
-        <a className="menu-item" href="admincouriers">🏍️ Courier Management</a>
-        <a className="menu-item" href="adminreviews">⭐ Reviews</a>
-        <a className="menu-item" href="adminwallet">⚙️ Wallet</a>
-        <a className="menu-item" href="adminsetting">⚙️ Settings</a>
-        <a className="menu-item logout" href="adminindex">🚪 Logout</a>
-      </div>
+      {/* Main Content */}
+      <main className="flex-1 ml-0 md:ml-60 p-6">
+        <h1 className="text-2xl font-bold text-orange-500 mb-6">Payments</h1>
 
-      <div className="main">
-        <h1 style={{ color: "#ff6a3c" }}>Payments</h1>
-
-        <div className="cards">
-          <div className="card card1"><h3>Total Payments</h3><p>£168.50</p></div>
-          <div className="card card2"><h3>Total COD</h3><p>£36.00</p></div>
-          <div className="card card3"><h3>Total Online</h3><p>£132.50</p></div>
-          <div className="card card4"><h3>Total Paid</h3><p>£60.00</p></div>
-          <div className="card card5"><h3>Total Unpaid</h3><p>£108.50</p></div>
+        {/* Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <PaymentCard title="Total Payments" amount="£168.50" color="bg-orange-500" />
+          <PaymentCard title="Total COD" amount="£36.00" color="bg-yellow-400" />
+          <PaymentCard title="Total Online" amount="£132.50" color="bg-blue-500" />
+          <PaymentCard title="Total Paid" amount="£60.00" color="bg-teal-500" />
+          <PaymentCard title="Total Unpaid" amount="£108.50" color="bg-pink-500" />
         </div>
 
-        <div className="chart-container">
-          <h3>Payment Trends</h3>
-          <canvas ref={chartRef} />
+        {/* Chart */}
+        <div className="bg-white/10 p-5 rounded-lg mb-6">
+          <h3 className="text-lg font-semibold mb-3">Payment Trends</h3>
+          <canvas ref={chartRef}></canvas>
         </div>
 
-        <div className="payment-filters">
-          <input className="input" placeholder="Search payments" />
-          <input type="date" className="input" />
-          <input type="date" className="input" />
-          <select className="input"><option>All Status</option></select>
-          <button className="btn refresh">Refresh</button>
-          <button className="btn export">Export CSV</button>
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-5">
+          <input type="text" placeholder="Search payments" className="px-3 py-2 rounded bg-white/20 focus:outline-none" />
+          <input type="date" className="px-3 py-2 rounded bg-white/20 focus:outline-none" />
+          <input type="date" className="px-3 py-2 rounded bg-white/20 focus:outline-none" />
+          <select className="px-3 py-2 rounded bg-white/20 focus:outline-none">
+            <option>All Status</option>
+          </select>
+          <button className="px-4 py-2 rounded bg-red-600 font-semibold">Refresh</button>
+          <button className="px-4 py-2 rounded bg-green-600 font-semibold">Export CSV</button>
         </div>
 
-        <div className="table-box">
-          <table>
-            <thead>
-              <tr><th>ORDER ID</th><th>CUSTOMER</th><th>AMOUNT</th><th>METHOD</th><th>STATUS</th><th>DATE</th><th>ACTION</th></tr>
+        {/* Table */}
+        <div className="overflow-x-auto bg-white/10 rounded-lg">
+          <table className="w-full min-w-[700px] border-collapse">
+            <thead className="bg-gray-700">
+              <tr>
+                <th className="p-3 text-left">ORDER ID</th>
+                <th className="p-3 text-left">CUSTOMER</th>
+                <th className="p-3 text-left">AMOUNT</th>
+                <th className="p-3 text-left">METHOD</th>
+                <th className="p-3 text-left">STATUS</th>
+                <th className="p-3 text-left">DATE</th>
+                <th className="p-3 text-left">ACTION</th>
+              </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>693945d8bfadf4ea618324533</td>
-                <td>adeosun semiat</td>
-                <td>£2.50</td>
-                <td>CARD</td>
-                <td><span className="badge paid">paid</span></td>
-                <td>12/10/2025</td>
-                <td><button className="mark-btn">Mark as Paid</button></td>
-              </tr>
-<tr>
-                <td>693945d8bfadf4ea618324533</td>
-                <td>adeosun semiat</td>
-                <td>£2.50</td>
-                <td>CARD</td>
-                <td><span className="badge paid">paid</span></td>
-                <td>12/10/2025</td>
-                <td><button className="mark-btn">Mark as Paid</button></td>
-              </tr>
-<tr>
-                <td>693945d8bfadf4ea618324533</td>
-                <td>adeosun semiat</td>
-                <td>£2.50</td>
-                <td>CARD</td>
-                <td><span className="badge paid">paid</span></td>
-                <td>12/10/2025</td>
-                <td><button className="mark-btn">Mark as Paid</button></td>
-              </tr>
-<tr>
-                <td>693945d8bfadf4ea618324533</td>
-                <td>adeosun semiat</td>
-                <td>£2.50</td>
-                <td>CARD</td>
-                <td><span className="badge paid">paid</span></td>
-                <td>12/10/2025</td>
-                <td><button className="mark-btn">Mark as Paid</button></td>
-              </tr>
-<tr>
-                <td>693945d8bfadf4ea618324533</td>
-                <td>adeosun semiat</td>
-                <td>£2.50</td>
-                <td>CARD</td>
-                <td><span className="badge paid">paid</span></td>
-                <td>12/10/2025</td>
-                <td><button className="mark-btn">Mark as Paid</button></td>
-              </tr>
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={idx} className="even:bg-white/10 hover:bg-white/20">
+                  <td className="p-3">693945d8bfadf4ea618324533</td>
+                  <td className="p-3">adeosun semiat</td>
+                  <td className="p-3">£2.50</td>
+                  <td className="p-3">CARD</td>
+                  <td className="p-3">
+                    <span className="px-2 py-1 rounded-full text-xs bg-green-400 text-green-900">Paid</span>
+                  </td>
+                  <td className="p-3">12/10/2025</td>
+                  <td className="p-3">
+                    <button className="px-3 py-1 bg-green-600 rounded text-white text-sm">Mark as Paid</button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-
-      </div>
+      </main>
     </div>
   );
 }
+
+/* ---------------- Components ---------------- */
+const SidebarLink = ({ to, icon, label, active, danger }) => (
+  <Link
+    to={to}
+    className={`flex items-center gap-2 px-3 py-2 rounded text-sm transition-colors
+      ${danger ? "text-red-500 hover:bg-red-600" : active ? "bg-orange-600 text-white" : "text-gray-400 hover:bg-gray-700"}`}
+  >
+    <span>{icon}</span> {label}
+  </Link>
+);
+
+const PaymentCard = ({ title, amount, color }) => (
+  <div className={`p-4 rounded-lg text-white ${color} flex flex-col justify-between`}>
+    <h3 className="text-sm font-semibold">{title}</h3>
+    <p className="text-lg font-bold">{amount}</p>
+  </div>
+);

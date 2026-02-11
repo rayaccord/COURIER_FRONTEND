@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -57,129 +57,119 @@ export default function Analytics() {
     ],
   };
 
+  const navItems = [
+    ["🏠 Home", "/admindashboard"],
+    ["🧾 Orders", "/adminorder"],
+    ["💳 Payments", "/adminpayment"],
+    ["📊 Analytics", "/adminAnalytics"],
+    ["🏪 Restaurants & Stores", "/adminmenulist"],
+    ["📝 Submissions", "/adminsubmissions"],
+    ["🏍️ Courier Management", "/admincouriers"],
+    ["⭐ Reviews", "/adminreviews"],
+    ["💰 Wallet", "/adminwallet"],
+    ["⚙️ Settings", "/adminsetting"],
+    ["🚪 Log-out", "/adminindex"],
+  ];
+
   return (
-    <div className="analytics-root">
-      <style>{`
-        :root{--primary:#ff6b00;--bg:#000814;--panel:#001d3d;--text:#fff}
-        body{margin:0;font-family:Arial,sans-serif;display:flex;background:var(--bg);color:var(--text)}
-        .sidebar{width:230px;background:var(--panel);height:100vh;padding-top:20px;position:fixed;transition:0.3s;left:0;overflow-y:auto}
-        .sidebar.show{left:0}
-        .sidebar ul{list-style:none;padding:0;margin-top:20px}
-        .sidebar ul li{padding:12px 20px;cursor:pointer}
-        .sidebar ul li a{text-decoration:none;color:var(--text);display:block}
-        .sidebar ul li.active{background:rgba(255,107,0,0.25);border-left:4px solid var(--primary)}
-        .container{margin-left:250px;padding:40px;width:calc(100% - 250px)}
-        h1{text-align:center;font-size:26px;margin-bottom:30px}
-        .menu-btn{display:none;position:fixed;left:20px;top:20px;z-index:1000;font-size:30px;cursor:pointer;color:var(--text)}
-        .top-right-notification{position:absolute;top:20px;right:25px;font-size:24px}
-        .top-right-notification a{text-decoration:none;color:white;transition:0.3s}
-        .top-right-notification a:hover{color:#ff6b00}
-
-        /* Top stats horizontal */
-        .stats-horizontal{display:flex;gap:20px;margin-bottom:30px;flex-wrap:wrap}
-        .stat-card{flex:1;background:var(--panel);padding:20px;border-radius:10px;text-align:center;min-width:150px}
-        .stat-card h3{margin:0;font-size:16px;color:#ddd}
-        .stat-card .stat-number{font-size:24px;color:#ff6b00;margin-top:8px}
-
-        /* Charts side by side */
-        .charts-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:30px}
-        .chart-box{flex:1;min-width:300px;background:var(--panel);padding:20px;border-radius:10px}
-
-        @media(max-width:768px){
-          .sidebar{left:-250px}
-          .sidebar.show{left:0}
-          .container{margin-left:0;width:100%;padding-top:70px}
-          .menu-btn{display:block}
-          .charts-row{flex-direction:column}
-        }
-      `}</style>
-
-      {/* MOBILE MENU BUTTON */}
-      <div className="menu-btn" onClick={() => setSidebarVisible(!sidebarVisible)}>
-        {sidebarVisible ? "✖" : "☰"}
-      </div>
-
-      {/* SIDEBAR */}
-      <div className={`sidebar ${sidebarVisible ? "show" : ""}`}>
-        <h2>Admin Panel</h2>
-        <ul>
-          {[
-            ["🏠 Home", "/admindashboard"],
-            ["🧾 Orders", "/adminorder"],
-            ["💳 Payments", "/adminpayment"],
-            ["📊 Analytics", "/adminAnalytics"],
-            ["🏪 Restaurants & Stores", "/adminmenulist"],
-            ["📝 Submissions", "/adminsubmissions"],
-            ["🏍️ Courier Management", "/admincouriers"],
-            ["⭐ Reviews", "/adminreviews"],
-            ["💰 Wallet", "/adminwallet"],
-            ["⚙️ Settings", "/adminsetting"],
-            ["🚪 Log-out", "/adminindex"],
-          ].map(([label, path]) => (
-            <li key={path} className={location.pathname === path ? "active" : ""}>
-              <a href={path}>{label}</a>
+    <div className="flex bg-[#000814] text-white min-h-screen">
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-56 bg-[#001d3d] p-5 transition-transform duration-300 z-50
+          ${sidebarVisible ? "translate-x-0" : "-translate-x-56"} md:translate-x-0`}
+      >
+        <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
+        <ul className="space-y-2">
+          {navItems.map(([label, path]) => (
+            <li
+              key={path}
+              className={`rounded-l-md ${
+                location.pathname === path ? "bg-orange-700 border-l-4 border-orange-500" : ""
+              }`}
+            >
+              <Link to={path} className="block px-4 py-2 hover:bg-orange-600 transition">
+                {label}
+              </Link>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="container">
+      {/* Mobile menu button */}
+      <button
+        className="fixed top-5 left-5 md:hidden z-50 text-3xl"
+        onClick={() => setSidebarVisible(!sidebarVisible)}
+      >
+        {sidebarVisible ? "✖" : "☰"}
+      </button>
+
+      {/* Main content */}
+      <div className="flex-1 ml-0 md:ml-56 p-6 md:p-10 relative">
         {/* Notification */}
-        <div className="top-right-notification">
-          <a href="adminnotification">🔔</a>
+        <div className="absolute top-5 right-5 text-2xl">
+          <Link to="/adminnotification">🔔</Link>
         </div>
 
-        <h1>Expanded Analytics Dashboard</h1>
+        <h1 className="text-3xl font-bold text-center mb-10">Expanded Analytics Dashboard</h1>
 
         {/* Top Stats */}
-        <div className="stats-horizontal">
-          <div className="stat-card">
-            <h3>Total Orders</h3>
-            <div className="stat-number">50</div>
+        <div className="flex flex-wrap gap-6 justify-center mb-10">
+          <div className="bg-[#001d3d] p-6 rounded-lg min-w-[150px] text-center flex-1">
+            <h3 className="text-gray-300">Total Orders</h3>
+            <p className="text-orange-500 text-2xl mt-2">50</p>
           </div>
-          <div className="stat-card">
-            <h3>Total Revenue</h3>
-            <div className="stat-number">₦290,000</div>
+          <div className="bg-[#001d3d] p-6 rounded-lg min-w-[150px] text-center flex-1">
+            <h3 className="text-gray-300">Total Revenue</h3>
+            <p className="text-orange-500 text-2xl mt-2">₦290,000</p>
           </div>
-          <div className="stat-card">
-            <h3>Total Reviews</h3>
-            <div className="stat-number">5</div>
+          <div className="bg-[#001d3d] p-6 rounded-lg min-w-[150px] text-center flex-1">
+            <h3 className="text-gray-300">Total Reviews</h3>
+            <p className="text-orange-500 text-2xl mt-2">5</p>
           </div>
         </div>
 
-        {/* Charts side by side */}
-        <div className="charts-row">
-          <div className="chart-box">
-            <h2>Revenue per Restaurant</h2>
+        {/* Charts Row */}
+        <div className="flex flex-col md:flex-row gap-6 mb-10">
+          <div className="bg-[#001d3d] p-6 rounded-lg flex-1 min-w-[300px]">
+            <h2 className="text-xl font-semibold mb-4">Revenue per Restaurant</h2>
             <Bar
               data={revenueData}
               options={{
                 responsive: true,
-                plugins: { legend: { display: true }, title: { display: true, text: "Revenue per Restaurant" } },
+                plugins: {
+                  legend: { display: true },
+                  title: { display: true, text: "Revenue per Restaurant" },
+                },
               }}
             />
           </div>
-          <div className="chart-box">
-            <h2>Popular Menu Items</h2>
+
+          <div className="bg-[#001d3d] p-6 rounded-lg flex-1 min-w-[300px]">
+            <h2 className="text-xl font-semibold mb-4">Popular Menu Items</h2>
             <Pie
               data={popularMenuData}
               options={{
                 responsive: true,
-                plugins: { legend: { display: true, position: "bottom" }, title: { display: true, text: "Popular Menu Items" } },
+                plugins: {
+                  legend: { display: true, position: "bottom" },
+                  title: { display: true, text: "Popular Menu Items" },
+                },
               }}
             />
           </div>
         </div>
 
         {/* Courier Performance */}
-        <div className="chart-box">
-          <h2>Courier Performance</h2>
+        <div className="bg-[#001d3d] p-6 rounded-lg mb-10">
+          <h2 className="text-xl font-semibold mb-4">Courier Performance</h2>
           <Bar
             data={courierPerformanceData}
             options={{
               responsive: true,
-              plugins: { legend: { display: true }, title: { display: true, text: "Courier Performance" } },
+              plugins: {
+                legend: { display: true },
+                title: { display: true, text: "Courier Performance" },
+              },
             }}
           />
         </div>

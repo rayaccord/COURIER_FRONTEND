@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 
 export default function CourierManagement() {
   const location = useLocation();
@@ -54,129 +54,126 @@ export default function CourierManagement() {
     );
   };
 
+  const navItems = [
+    ["🏠 Home", "/admindashboard"],
+    ["🧾 Orders", "/adminorder"],
+    ["💳 Payments", "/adminpayment"],
+    ["📊 Analytics", "/adminAnalytics"],
+    ["🏪 Restaurants & Stores", "/adminmenulist"],
+    ["📝 Submissions", "/adminsubmissions"],
+    ["🏍️ Courier Management", "/admincouriers"],
+    ["⭐ Reviews", "/adminreviews"],
+    ["💰 Wallet", "/adminwallet"],
+    ["⚙️ Settings", "/adminsetting"],
+    ["🚪 Log-out", "/adminindex"],
+  ];
+
   return (
-    <div className="courier-root">
-      <style>{`
-        :root{--primary:#ff6b00;--bg:#000814;--panel:#001d3d;--text:#fff}
-        body{margin:0;font-family:Arial,sans-serif;display:flex;background:var(--bg);color:var(--text)}
-        .sidebar{width:230px;background:var(--panel);height:100vh;padding-top:20px;position:fixed;transition:0.3s;left:0;overflow-y:auto}
-        .sidebar ul{list-style:none;padding:0;margin-top:20px}
-        .sidebar ul li{padding:12px 20px;cursor:pointer}
-        .sidebar ul li a{text-decoration:none;color:var(--text);display:block}
-        .sidebar ul li.active{background:rgba(255,107,0,0.25);border-left:4px solid var(--primary)}
-        .container{margin-left:250px;padding:40px;width:calc(100% - 250px)}
-        h1{text-align:center;font-size:26px;margin-bottom:30px}
-        .top-up-box, .register-box{background:var(--panel);padding:20px;border-radius:10px;margin-bottom:30px;display:flex;gap:10px;flex-wrap:wrap}
-        input, select{flex:1;padding:10px;border-radius:6px;border:none;background:rgba(255,255,255,0.08);color:#fff}
-        button{padding:10px 16px;border:none;border-radius:6px;background:#00a651;color:#fff;cursor:pointer}
-        table{width:100%;border-collapse:collapse;background:var(--panel);border-radius:8px;overflow:hidden}
-        th, td{padding:12px;text-align:left;border-bottom:1px solid #1a1a2e}
-        th{background:#001f3d}
-        button.status-btn{padding:6px 12px;border:none;border-radius:6px;color:#fff;cursor:pointer;margin-right:6px}
-        .available{background:#00a651}
-        .ondelivery{background:#ffb400}
-        .menu-btn{display:none;position:fixed;left:20px;top:20px;z-index:1000;font-size:30px;cursor:pointer;color:var(--text)}
-        .top-right-notification{position:absolute;top:20px;right:25px;font-size:24px}
-        .top-right-notification a{text-decoration:none;color:white;transition:0.3s}
-        .top-right-notification a:hover{color:#ff6b00}
-        @media(max-width:768px){
-          .sidebar{left:-250px}
-          .sidebar.show{left:0}
-          .container{margin-left:0;width:100%;padding-top:70px}
-          .menu-btn{display:block}
-        }
-      `}</style>
-
-      {/* MOBILE MENU BUTTON */}
-      <div className="menu-btn" onClick={() => setSidebarVisible(!sidebarVisible)}>
-        {sidebarVisible ? "✖" : "☰"}
-      </div>
-
-      {/* SIDEBAR */}
-      <div className={`sidebar ${sidebarVisible ? "show" : ""}`}>
-        <h2>Admin Panel</h2>
-        <ul>
-          {[
-            ["🏠 Home", "/admindashboard"],
-            ["🧾 Orders", "/adminorder"],
-            ["💳 Payments", "/adminpayment"],
-            ["📊 Analytics", "/adminAnalytics"],
-            ["🏪 Restaurants & Stores", "/adminmenulist"],
-            ["📝 Submissions", "/adminsubmissions"],
-            ["🏍️ Courier Management", "/admincouriers"],
-            ["⭐ Reviews", "/adminreviews"],
-            ["💰 Wallet", "/adminwallet"],
-            ["⚙️ Settings", "/adminsetting"],
-            ["🚪 Log-out", "/adminindex"],
-          ].map(([label, path]) => (
-            <li key={path} className={location.pathname === path ? "active" : ""}>
-              <a href={path}>{label}</a>
+    <div className="flex bg-[#000814] text-white min-h-screen">
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-full w-56 bg-[#001d3d] p-5 transition-transform duration-300 z-50
+          ${sidebarVisible ? "translate-x-0" : "-translate-x-56"} md:translate-x-0`}
+      >
+        <h2 className="text-2xl font-bold mb-6">Admin Panel</h2>
+        <ul className="space-y-2">
+          {navItems.map(([label, path]) => (
+            <li
+              key={path}
+              className={`rounded-l-md ${
+                location.pathname === path ? "bg-orange-700 border-l-4 border-orange-500" : ""
+              }`}
+            >
+              <Link to={path} className="block px-4 py-2 hover:bg-orange-600 transition">
+                {label}
+              </Link>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* MAIN CONTENT */}
-      <div className="container">
-        <div className="top-right-notification">
-          <a href="adminnotification">🔔</a>
+      {/* Mobile menu button */}
+      <button
+        className="fixed top-5 left-5 md:hidden z-50 text-3xl"
+        onClick={() => setSidebarVisible(!sidebarVisible)}
+      >
+        {sidebarVisible ? "✖" : "☰"}
+      </button>
+
+      {/* Main content */}
+      <div className="flex-1 ml-0 md:ml-56 p-6 md:p-10 relative">
+        {/* Notification */}
+        <div className="absolute top-5 right-5 text-2xl">
+          <Link to="/adminnotification">🔔</Link>
         </div>
 
-        <h1>Courier Management</h1>
+        <h1 className="text-3xl font-bold text-center mb-10">Courier Management</h1>
 
         {/* Register New Courier */}
-        <div className="register-box">
+        <div className="bg-[#001d3d] p-6 rounded-lg flex flex-wrap gap-4 mb-10">
           <input
+            className="flex-1 px-4 py-2 rounded-md bg-[#001f3d] text-white focus:outline-none"
             placeholder="Courier Name"
             value={newCourier.name}
             onChange={(e) => setNewCourier({ ...newCourier, name: e.target.value })}
           />
           <input
+            className="flex-1 px-4 py-2 rounded-md bg-[#001f3d] text-white focus:outline-none"
             placeholder="Phone Number"
             value={newCourier.phone}
             onChange={(e) => setNewCourier({ ...newCourier, phone: e.target.value })}
           />
           <input
+            className="flex-1 px-4 py-2 rounded-md bg-[#001f3d] text-white focus:outline-none"
             placeholder="Vehicle Type"
             value={newCourier.vehicle}
             onChange={(e) => setNewCourier({ ...newCourier, vehicle: e.target.value })}
           />
-          <button onClick={registerCourier}>Register Courier</button>
+          <button
+            className="px-6 py-2 bg-green-600 rounded-md hover:bg-green-700 transition"
+            onClick={registerCourier}
+          >
+            Register Courier
+          </button>
         </div>
 
         {/* Courier List */}
-        <h2>Current Couriers</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Phone</th>
-              <th>Vehicle</th>
-              <th>Status</th>
-              <th>Earnings (₦)</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {couriers.map((c) => (
-              <tr key={c.id}>
-                <td>{c.name}</td>
-                <td>{c.phone}</td>
-                <td>{c.vehicle}</td>
-                <td>{c.status}</td>
-                <td>{c.earnings.toLocaleString()}</td>
-                <td>
-                  <button
-                    className={`status-btn ${c.status === "Available" ? "available" : "ondelivery"}`}
-                    onClick={() => toggleStatus(c.id)}
-                  >
-                    {c.status === "Available" ? "Set On Delivery" : "Set Available"}
-                  </button>
-                </td>
+        <h2 className="text-2xl font-semibold mb-4">Current Couriers</h2>
+        <div className="overflow-x-auto rounded-lg">
+          <table className="min-w-full bg-[#001d3d] text-left text-white">
+            <thead className="bg-[#001f3d]">
+              <tr>
+                <th className="px-4 py-2">Name</th>
+                <th className="px-4 py-2">Phone</th>
+                <th className="px-4 py-2">Vehicle</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Earnings (₦)</th>
+                <th className="px-4 py-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {couriers.map((c) => (
+                <tr key={c.id} className="border-b border-gray-700">
+                  <td className="px-4 py-2">{c.name}</td>
+                  <td className="px-4 py-2">{c.phone}</td>
+                  <td className="px-4 py-2">{c.vehicle}</td>
+                  <td className="px-4 py-2">{c.status}</td>
+                  <td className="px-4 py-2">{c.earnings.toLocaleString()}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      className={`px-3 py-1 rounded-md text-white font-semibold transition ${
+                        c.status === "Available" ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"
+                      }`}
+                      onClick={() => toggleStatus(c.id)}
+                    >
+                      {c.status === "Available" ? "Set On Delivery" : "Set Available"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
