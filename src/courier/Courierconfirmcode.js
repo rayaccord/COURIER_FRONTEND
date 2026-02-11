@@ -16,137 +16,50 @@ export default function CourierConfirmCode() {
 
     if (code === CORRECT_CODE) {
       setError("");
-      navigate("/courierdashboard"); // courier home/dashboard
+      navigate("/courierdashboard");
     } else {
       setError("Invalid confirmation code");
     }
   };
 
   return (
-    <>
-      <style>{`
-        * {
-          box-sizing: border-box;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-            Roboto, Helvetica, Arial, sans-serif;
-        }
+    <div className="min-h-screen flex items-center justify-center bg-orange-500 p-4">
+      <div className="w-full max-w-xs bg-orange-400 rounded-2xl p-8 shadow-lg text-center">
+        <div className="text-4xl mb-3 text-white">🔐</div>
 
-        body {
-          margin: 0;
-        }
+        <h2 className="text-xl font-semibold mb-1 text-white">
+          <center>Confirm Your Account</center>
+        </h2>
 
-        .auth-wrapper {
-          height: 100vh;
-          width: 100%;
-          background: linear-gradient(135deg, #e5e7eb, #f3f4f6);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+        <p className="text-sm font-normal text-white/90 mb-6">
+          Enter the 4-digit code sent to your phone
+        </p>
 
-        .auth-card {
-          width: 360px;
-          background: #ffffff;
-          border-radius: 14px;
-          padding: 28px 24px 30px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-          text-align: center;
-        }
+        <input
+          className="w-full px-4 py-3 text-xl text-center tracking-widest rounded-xl bg-white/30 text-white outline-none placeholder-white/70"
+          type="text"
+          maxLength="4"
+          placeholder="••••"
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+        />
 
-        .icon {
-          font-size: 36px;
-          margin-bottom: 10px;
-        }
+        {error && <div className="text-white text-sm mt-2">{error}</div>}
 
-        .title {
-          font-size: 20px;
-          font-weight: 600;
-          margin-bottom: 6px;
-          color: #111827;
-        }
+        <button
+          className="mt-5 w-full py-3 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-colors"
+          onClick={handleVerify}
+        >
+          Verify Code
+        </button>
 
-        .subtitle {
-          font-size: 14px;
-          color: #6b7280;
-          margin-bottom: 20px;
-        }
-
-        .code-input {
-          width: 100%;
-          padding: 14px;
-          font-size: 20px;
-          text-align: center;
-          letter-spacing: 10px;
-          border-radius: 10px;
-          border: 1px solid #d1d5db;
-          outline: none;
-        }
-
-        .error {
-          color: #dc2626;
-          font-size: 13px;
-          margin-top: 10px;
-        }
-
-        .verify-btn {
-          margin-top: 18px;
-          width: 100%;
-          padding: 12px;
-          border-radius: 10px;
-          border: none;
-          background: #111827;
-          color: white;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .verify-btn:hover {
-          background: #030712;
-        }
-
-        .resend {
-          margin-top: 16px;
-          font-size: 13px;
-          color: #2563eb;
-          cursor: pointer;
-        }
-      `}</style>
-
-      <div className="auth-wrapper">
-        <div className="auth-card">
-          <div className="icon">🔐</div>
-
-          <h2 className="title"><center>Confirm Your Account</center></h2>
-          <p className="subtitle">
-            Enter the 4-digit code sent to your phone
-          </p>
-
-          <input
-            className="code-input"
-            type="text"
-            maxLength="4"
-            placeholder="••••"
-            value={code}
-            onChange={(e) =>
-              setCode(e.target.value.replace(/\D/g, ""))
-            }
-          />
-
-          {error && <div className="error">{error}</div>}
-
-          <button className="verify-btn" onClick={handleVerify}>
-            Verify Code
-          </button>
-
-          <div
-            className="resend"
-            onClick={() => alert("Demo code is 1234")}
-          >
-            Didn’t get a code?
-          </div>
+        <div
+          className="mt-4 text-xs font-medium text-white/90 cursor-pointer hover:underline"
+          onClick={() => alert("Demo code is 1234")}
+        >
+          Didn’t get a code?
         </div>
       </div>
-    </>
+    </div>
   );
 }

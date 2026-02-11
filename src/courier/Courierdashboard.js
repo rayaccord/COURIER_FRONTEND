@@ -6,23 +6,14 @@ import CourierMap from "./CourierMap";
 export default function CourierDashboard() {
   const navigate = useNavigate();
 
-  /* ---------- CORE STATE ---------- */
   const [online, setOnline] = useState(false);
   const [activeTab, setActiveTab] = useState("Home");
   const [isMobile, setIsMobile] = useState(false);
-
-  /* ---------- LIVE LOCATION ---------- */
   const [location, setLocation] = useState({ lat: 6.5244, lng: 3.3792 });
-
-  /* ---------- COURIER STATS ---------- */
   const [wallet] = useState({ available: 85.5, pending: 22.0, today: 18.5 });
   const [rating] = useState(4.7);
   const [completedOrders] = useState(126);
-
-  /* ---------- ORDER FLOW ---------- */
   const [orderStage, setOrderStage] = useState("Assigned");
-
-  /* ---------- ORDER REQUEST ---------- */
   const [incomingOrder, setIncomingOrder] = useState(null);
   const [orderTimer, setOrderTimer] = useState(0);
 
@@ -31,7 +22,8 @@ export default function CourierDashboard() {
     if (!online) return;
 
     const watchId = navigator.geolocation.watchPosition(
-      (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (pos) =>
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
       (err) => console.error("GPS error:", err),
       { enableHighAccuracy: true }
     );
@@ -53,11 +45,11 @@ export default function CourierDashboard() {
 
     const mock = setInterval(() => {
       setIncomingOrder({
-        id: `ORD-${Math.floor(Math.random() * 10000)}`, // unique order id
+        id: `ORD-${Math.floor(Math.random() * 10000)}`,
         restaurant: { lat: 6.5249, lng: 3.3798 },
         customer: { lat: 6.5281, lng: 3.3812 },
       });
-    }, 15000); // new order every 15 seconds for testing
+    }, 15000);
 
     return () => clearInterval(mock);
   }, [online]);
@@ -70,12 +62,11 @@ export default function CourierDashboard() {
     }
 
     setOrderTimer(20);
-
     const interval = setInterval(() => {
       setOrderTimer((t) => {
         if (t <= 1) {
           clearInterval(interval);
-          setIncomingOrder(null); // auto dismiss order
+          setIncomingOrder(null);
           return 0;
         }
         return t - 1;
@@ -85,11 +76,10 @@ export default function CourierDashboard() {
     return () => clearInterval(interval);
   }, [incomingOrder]);
 
-  /* ================= GEO-RADIUS CHECK ================= */
   const isWithinRadius = (target, radius = 100) => {
     if (!target) return false;
 
-    const R = 6371e3; // meters
+    const R = 6371e3; 
     const φ1 = (location.lat * Math.PI) / 180;
     const φ2 = (target.lat * Math.PI) / 180;
     const Δφ = ((target.lat - location.lat) * Math.PI) / 180;
@@ -102,9 +92,15 @@ export default function CourierDashboard() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= radius;
   };
 
-  /* ================= ORDER STEP LOCKING ================= */
   const nextStage = () => {
-    const flow = ["Assigned", "Heading to Restaurant", "Arrived at Restaurant", "Picked Up", "On the Way", "Delivered"];
+    const flow = [
+      "Assigned",
+      "Heading to Restaurant",
+      "Arrived at Restaurant",
+      "Picked Up",
+      "On the Way",
+      "Delivered",
+    ];
 
     if (orderStage === "Heading to Restaurant" && !isWithinRadius(incomingOrder?.restaurant)) {
       alert("You must be at the restaurant to proceed");
@@ -120,7 +116,6 @@ export default function CourierDashboard() {
     if (index < flow.length - 1) setOrderStage(flow[index + 1]);
   };
 
-  /* ================= ACCEPT / REJECT ORDER ================= */
   const acceptOrder = () => {
     setOrderStage("Assigned");
     setActiveTab("Orders");
@@ -129,12 +124,8 @@ export default function CourierDashboard() {
 
   const rejectOrder = () => setIncomingOrder(null);
 
-  /* ================= LOGOUT ================= */
-  const handleLogout = () => {
-    navigate("/courierlogin");
-  };
+  const handleLogout = () => navigate("/courierlogin");
 
-  /* ================= PAGE SWITCHER ================= */
   const renderContent = () => {
     switch (activeTab) {
       case "Orders":
@@ -157,51 +148,59 @@ export default function CourierDashboard() {
     }
   };
 
-  /* ================= LAYOUT ================= */
   return (
-    <div style={styles.wrapper}>
+    <div className="flex min-h-screen bg-gray-100">
       {!isMobile && (
-        <aside style={styles.sidebar}>
+        <aside className="w-56 bg-white p-5 flex flex-col justify-between border-r border-gray-200">
           <div>
-            <h3>🛵 Courier</h3>
+            <h3 className="text-lg mb-4">🛵 Courier</h3>
             {["Home", "Orders", "Wallet", "Profile"].map((tab) => (
               <div
                 key={tab}
-                style={{ ...styles.navItem, ...(activeTab === tab ? styles.active : {}) }}
                 onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-2 p-2 rounded-md cursor-pointer ${
+                  activeTab === tab ? "bg-blue-100 font-semibold" : ""
+                }`}
               >
-                {tab === "Home" && "🏠 "}
-                {tab === "Orders" && "📦 "}
-                {tab === "Wallet" && "💰 "}
-                {tab === "Profile" && "👤 "}
-                {tab}
+                {tab === "Home" && "🏠"}
+                {tab === "Orders" && "📦"}
+                {tab === "Wallet" && "💰"}
+                {tab === "Profile" && "👤"}
+                <span>{tab}</span>
               </div>
             ))}
             <div
-              style={{ ...styles.navItem, marginTop: 20, background: "#dc2626", color: "#fff", textAlign: "center" }}
               onClick={handleLogout}
+              className="mt-5 p-2 text-center bg-red-600 text-white rounded-md cursor-pointer"
             >
               🔒 Logout
             </div>
           </div>
-
-          <div style={{ color: online ? "#16a34a" : "#6b7280" }}>● {online ? "ONLINE" : "OFFLINE"}</div>
+          <div className={`text-sm ${online ? "text-green-600" : "text-gray-400"}`}>
+            ● {online ? "ONLINE" : "OFFLINE"}
+          </div>
         </aside>
       )}
 
-      <main style={styles.main}>{renderContent()}</main>
+      <main className="flex-1 p-5 pb-24">{renderContent()}</main>
 
       {/* ===== ORDER POPUP ===== */}
       {incomingOrder && (
-        <div style={styles.orderPopup}>
-          <h3>📦 New Order</h3>
-          <p>Order ID: {incomingOrder.id}</p>
-          <p>⏳ Time left: {orderTimer}s</p>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={styles.acceptBtn} onClick={acceptOrder}>
+        <div className="fixed bottom-24 right-5 bg-white p-4 rounded-xl shadow-lg w-64 z-50">
+          <h3 className="font-semibold mb-1">📦 New Order</h3>
+          <p className="text-sm">Order ID: {incomingOrder.id}</p>
+          <p className="text-sm">⏳ Time left: {orderTimer}s</p>
+          <div className="flex gap-2 mt-2">
+            <button
+              className="flex-1 bg-green-600 text-white py-2 rounded-md"
+              onClick={acceptOrder}
+            >
               Accept
             </button>
-            <button style={styles.rejectBtn} onClick={rejectOrder}>
+            <button
+              className="flex-1 bg-red-600 text-white py-2 rounded-md"
+              onClick={rejectOrder}
+            >
               Reject
             </button>
           </div>
@@ -209,19 +208,21 @@ export default function CourierDashboard() {
       )}
 
       {isMobile && (
-        <nav style={styles.mobileNav}>
+        <nav className="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200">
           {["Home", "Orders", "Wallet", "Profile"].map((tab) => (
             <div
               key={tab}
               onClick={() => setActiveTab(tab)}
-              style={{ ...styles.mobileItem, ...(activeTab === tab ? styles.activeMobile : {}) }}
+              className={`flex-1 text-center p-2 ${
+                activeTab === tab ? "text-blue-600 font-semibold" : ""
+              }`}
             >
               <small>{tab}</small>
             </div>
           ))}
           <div
-            style={{ ...styles.mobileItem, background: "#dc2626", color: "#fff" }}
             onClick={handleLogout}
+            className="flex-1 text-center p-2 bg-red-600 text-white"
           >
             🔒 Logout
           </div>
@@ -235,21 +236,22 @@ export default function CourierDashboard() {
 function Home({ online, setOnline, wallet, rating, location, incomingOrder }) {
   return (
     <>
-      <h2>Home</h2>
-      <div style={styles.cardRow}>
+      <h2 className="text-xl font-semibold mb-4">Home</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <Card title="Status" value={online ? "ONLINE" : "OFFLINE"} />
         <Card title="Today’s Earnings" value={`€${wallet.today}`} />
         <Card title="Wallet Balance" value={`€${wallet.available}`} />
         <Card title="Rating" value={`⭐ ${rating}`} />
       </div>
       <button
-        style={{ ...styles.toggleBtn, background: online ? "#dc2626" : "#16a34a" }}
+        className={`py-3 px-4 rounded-lg mb-4 text-white ${
+          online ? "bg-red-600" : "bg-green-600"
+        }`}
         onClick={() => setOnline(!online)}
       >
         {online ? "Go Offline" : "Go Online"}
       </button>
 
-      {/* ================= MAP ================= */}
       <CourierMap location={location} incomingOrder={incomingOrder} />
     </>
   );
@@ -258,14 +260,17 @@ function Home({ online, setOnline, wallet, rating, location, incomingOrder }) {
 function ActiveOrder({ stage, onNext }) {
   return (
     <>
-      <h2>Active Order</h2>
-      <h3>{stage}</h3>
+      <h2 className="text-xl font-semibold mb-2">Active Order</h2>
+      <h3 className="mb-3">{stage}</h3>
       {stage !== "Delivered" && (
-        <button style={styles.primaryBtn} onClick={onNext}>
+        <button
+          className="py-2 px-4 bg-blue-600 text-white rounded-lg"
+          onClick={onNext}
+        >
           Next Step →
         </button>
       )}
-      {stage === "Delivered" && <p style={{ color: "#16a34a" }}>✔ Delivery Completed</p>}
+      {stage === "Delivered" && <p className="text-green-600">✔ Delivery Completed</p>}
     </>
   );
 }
@@ -273,8 +278,8 @@ function ActiveOrder({ stage, onNext }) {
 function Wallet({ wallet }) {
   return (
     <>
-      <h2>Wallet</h2>
-      <div style={styles.cardRow}>
+      <h2 className="text-xl font-semibold mb-2">Wallet</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Card title="Available" value={`€${wallet.available}`} />
         <Card title="Pending" value={`€${wallet.pending}`} />
       </div>
@@ -285,7 +290,7 @@ function Wallet({ wallet }) {
 function Profile({ rating, completed, online }) {
   return (
     <>
-      <h2>Profile</h2>
+      <h2 className="text-xl font-semibold mb-2">Profile</h2>
       <p>⭐ Rating: {rating}</p>
       <p>📦 Completed Orders: {completed}</p>
       <p>Status: {online ? "ONLINE" : "OFFLINE"}</p>
@@ -295,28 +300,9 @@ function Profile({ rating, completed, online }) {
 
 function Card({ title, value }) {
   return (
-    <div style={styles.card}>
-      <small>{title}</small>
-      <h3>{value}</h3>
+    <div className="bg-white p-3 rounded-lg shadow-sm">
+      <small className="text-gray-500">{title}</small>
+      <h3 className="font-semibold">{value}</h3>
     </div>
   );
 }
-
-/* ================= STYLES ================= */
-const styles = {
-  wrapper: { display: "flex", minHeight: "100vh", background: "#f8fafc" },
-  sidebar: { width: 220, background: "#fff", padding: 20, display: "flex", flexDirection: "column", justifyContent: "space-between", borderRight: "1px solid #e5e7eb" },
-  navItem: { padding: 10, cursor: "pointer", borderRadius: 8 },
-  active: { background: "#eff6ff", fontWeight: 600 },
-  main: { flex: 1, padding: 20, paddingBottom: 90 },
-  mobileNav: { position: "fixed", bottom: 0, left: 0, right: 0, display: "flex", background: "#fff", borderTop: "1px solid #e5e7eb" },
-  mobileItem: { flex: 1, textAlign: "center", padding: 10 },
-  activeMobile: { color: "#2563eb" },
-  cardRow: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12 },
-  card: { background: "#fff", padding: 14, borderRadius: 12 },
-  toggleBtn: { padding: 12, borderRadius: 10, border: "none", color: "#fff", marginBottom: 20 },
-  primaryBtn: { padding: 12, borderRadius: 10, border: "none", background: "#2563eb", color: "#fff" },
-  orderPopup: { position: "fixed", bottom: 100, right: 20, background: "#fff", padding: 16, borderRadius: 14, boxShadow: "0 10px 25px rgba(0,0,0,0.15)", width: 260, zIndex: 999 },
-  acceptBtn: { background: "#16a34a", color: "#fff", border: "none", padding: 10, borderRadius: 8, flex: 1 },
-  rejectBtn: { background: "#dc2626", color: "#fff", border: "none", padding: 10, borderRadius: 8, flex: 1 },
-};

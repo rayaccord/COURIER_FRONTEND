@@ -6,84 +6,88 @@ export default function CourierLogin() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // Handle sign in
   const handleSignIn = () => {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
     }
-
-    navigate("/courierdashboard"); // courier home/dashboard
+    navigate("/courierdashboard");
   };
 
-  // Handle Google login
   const handleGoogleSignIn = () => {
     alert("Google sign-in successful");
     navigate("/courier");
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
+    <div className="min-h-screen flex items-center justify-center bg-orange-500 p-4">
+      <div className="w-full max-w-md bg-orange-400 rounded-2xl p-9 shadow-lg text-center">
         {/* Logo */}
-        <div style={styles.logoBox}>
-          <div style={styles.logo}>🏍️</div>
-          <small style={{ color: "#777" }}>Courier Portal</small>
+        <div className="mb-5">
+          <div className="mx-auto w-14 h-14 rounded-full bg-orange-500 flex items-center justify-center text-white text-2xl mb-1">
+            🏍️
+          </div>
+          <small className="text-white/85 text-xs font-normal">Courier Portal</small>
         </div>
 
-        <h2 style={styles.title}><center>Welcome Back, Rider</center></h2>
-        <p style={styles.subtitle}>Sign in to start delivering</p>
+        <h2 className="text-lg font-semibold text-white mb-1">Welcome Back, Rider</h2>
+        <p className="text-sm text-white/90 mb-6">Sign in to start delivering</p>
 
         {/* Google Sign In */}
-        <button style={styles.googleBtn} onClick={handleGoogleSignIn}>
+        <button
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/90 text-sm font-semibold text-gray-800 hover:bg-white transition-colors"
+          onClick={handleGoogleSignIn}
+        >
           <img
             src="https://www.svgrepo.com/show/475656/google-color.svg"
             alt="Google"
-            style={{ width: 18 }}
+            className="w-4"
           />
           Continue with Google
         </button>
 
-        <div style={styles.or}>OR</div>
+        <div className="my-4 text-xs text-white/80">OR</div>
 
         {/* Email */}
-        <label style={styles.label}>Email</label>
+        <label className="block text-left text-xs text-white mb-1 mt-3">Email</label>
         <input
           type="email"
           placeholder="rider@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
+          className="w-full px-3 py-3 rounded-xl bg-white/30 text-white placeholder-white/75 text-sm outline-none"
         />
 
         {/* Password */}
-        <label style={styles.label}>Password</label>
+        <label className="block text-left text-xs text-white mb-1 mt-3">Password</label>
         <input
           type="password"
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
+          className="w-full px-3 py-3 rounded-xl bg-white/30 text-white placeholder-white/75 text-sm outline-none"
         />
 
         {/* Sign in */}
-        <button style={styles.signInBtn} onClick={handleSignIn}>
+        <button
+          className="w-full mt-5 py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 transition-colors"
+          onClick={handleSignIn}
+        >
           Sign in
         </button>
 
         {/* Footer */}
-        <div style={styles.footer}>
+        <div className="mt-5 flex justify-between text-xs text-white/85">
           <span
-            style={styles.link}
+            className="cursor-pointer font-semibold hover:underline"
             onClick={() => navigate("/courierforgetpassword")}
           >
             Forgot password?
           </span>
-
           <span>
             New courier?{" "}
             <b
-              style={styles.link}
+              className="cursor-pointer font-semibold hover:underline"
               onClick={() => navigate("/couriercreateaccount")}
             >
               Join now
@@ -94,94 +98,3 @@ export default function CourierLogin() {
     </div>
   );
 }
-
-/* ================= STYLES ================= */
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#f5f6f7",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    fontFamily: "Inter, Arial, sans-serif",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 420,
-    background: "#fff",
-    padding: "32px 28px",
-    borderRadius: 14,
-    boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
-    textAlign: "center",
-  },
-  logoBox: { marginBottom: 20 },
-  logo: {
-    width: 56,
-    height: 56,
-    borderRadius: "50%",
-    background: "#f0f0f0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 28,
-    margin: "0 auto 6px",
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 700,
-    marginBottom: 6,
-  },
-  subtitle: {
-    color: "#6b7280",
-    fontSize: 14,
-    marginBottom: 24,
-  },
-  googleBtn: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 10,
-    border: "1px solid #e5e7eb",
-    background: "#fff",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 10,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  or: { margin: "18px 0", fontSize: 13, color: "#9ca3af" },
-  label: {
-    display: "block",
-    textAlign: "left",
-    fontSize: 13,
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  input: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 10,
-    border: "1px solid #e5e7eb",
-    fontSize: 14,
-  },
-  signInBtn: {
-    width: "100%",
-    padding: 14,
-    borderRadius: 12,
-    border: "none",
-    marginTop: 18,
-    background: "#111827",
-    color: "#fff",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  footer: {
-    marginTop: 18,
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: 13,
-    color: "#6b7280",
-  },
-  link: { color: "#2563eb", cursor: "pointer" },
-};
