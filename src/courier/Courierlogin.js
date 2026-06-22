@@ -1,18 +1,57 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../api";
 
 export default function CourierLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
+  try {
     if (!email || !password) {
       alert("Please enter email and password");
       return;
     }
+
+    const response = await API.post(
+      "/auth/login",
+      {
+        email,
+        password,
+      }
+    );
+
+    /* SAVE TOKEN */
+    localStorage.setItem(
+      "courierToken",
+
+      response.data.token
+    );
+
+    /* SAVE USER */
+localStorage.setItem(
+  "courierUser",
+  JSON.stringify(response.data.courier)
+);
+
+/* SAVE Courier id */
+localStorage.setItem(
+  "courierId",
+  response.data.courier.id
+);
+
+    alert("Login successful");
+
     navigate("/courierdashboard");
-  };
+
+  } catch (error) {
+    alert(
+      error.response?.data?.message ||
+      "Login failed"
+    );
+  }
+};
 
   const handleGoogleSignIn = () => {
     alert("Google sign-in successful");
@@ -30,7 +69,7 @@ export default function CourierLogin() {
           <small className="text-white/85 text-xs font-normal">Courier Portal</small>
         </div>
 
-        <h2 className="text-lg font-semibold text-white mb-1">Welcome Back, Rider</h2>
+        <h2 className="text-lg font-semibold text-white mb-1 text-center">Welcome Back, Rider</h2>
         <p className="text-sm text-white/90 mb-6">Sign in to start delivering</p>
 
         {/* Google Sign In */}

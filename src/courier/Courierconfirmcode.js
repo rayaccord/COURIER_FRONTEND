@@ -1,24 +1,119 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React,
+{
+  useState,
+  useEffect,
+} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import API from "../api";
+
 
 export default function CourierConfirmCode() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const email = location.state?.email;
+
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [timer, setTimer] =
+  useState(60);
+  const [sending, setSending] =
+  useState(false);
 
-  const CORRECT_CODE = "1234";
+  useEffect(() => {
 
-  const handleVerify = () => {
-    if (code.length !== 4) {
-      setError("Please enter the 4-digit code");
-      return;
+  if (timer <= 0) return;
+
+  const interval =
+    setInterval(() => {
+
+      setTimer(prev =>
+        prev - 1
+      );
+
+    }, 1000);
+
+  return () =>
+    clearInterval(interval);
+
+}, [timer]);
+
+
+
+const handleResend =
+  async () => {
+
+    try {
+
+      setSending(true);
+
+      await API.post(
+        "/auth/resend-verification",
+        {
+          email,
+        }
+      );
+
+      alert(
+        "New verification code sent"
+      );
+
+      setTimer(60);
+
+    } catch (error) {
+
+      alert(
+        error.response?.data
+          ?.message ||
+        "Failed to resend code"
+      );
+
+    } finally {
+
+      setSending(false);
+
     }
+  };
 
-    if (code === CORRECT_CODE) {
-      setError("");
-      navigate("/courierdashboard");
-    } else {
-      setError("Invalid confirmation code");
+
+
+  const handleVerify = async () => {
+    try {
+      if (code.length !== 4) {
+        setError("Please enter the 4-digit code");
+        return;
+      }
+
+      setLoading(true);
+
+      const response = await API.post("/auth/verify", {
+        email,
+        code,
+      });
+
+      alert(response.data.message);
+
+/* SAVE TOKEN */
+localStorage.setItem(
+  "courierToken",
+  response.data.token
+);
+
+/* SAVE USER */
+localStorage.setItem(
+  "courierUser",
+  JSON.stringify(response.data.courier)
+);
+
+navigate("/courierdashboard");
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Verification failed"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -28,11 +123,11 @@ export default function CourierConfirmCode() {
         <div className="text-4xl mb-3 text-white">🔐</div>
 
         <h2 className="text-xl font-semibold mb-1 text-white">
-          <center>Confirm Your Account</center>
+          Confirm Your Account
         </h2>
 
         <p className="text-sm font-normal text-white/90 mb-6">
-          Enter the 4-digit code sent to your phone
+          Enter the 4-digit code sent to your account
         </p>
 
         <input
@@ -41,24 +136,39 @@ export default function CourierConfirmCode() {
           maxLength="4"
           placeholder="••••"
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+          onChange={(e) =>
+            setCode(e.target.value.replace(/\D/g, ""))
+          }
         />
 
-        {error && <div className="text-white text-sm mt-2">{error}</div>}
+        {error && (
+          <div className="text-white text-sm mt-2">
+            {error}
+          </div>
+        )}
 
         <button
           className="mt-5 w-full py-3 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 transition-colors"
           onClick={handleVerify}
+          disabled={loading}
         >
-          Verify Code
+          {loading ? "Verifying..." : "Verify Code"}
         </button>
 
-        <div
-          className="mt-4 text-xs font-medium text-white/90 cursor-pointer hover:underline"
-          onClick={() => alert("Demo code is 1234")}
-        >
-          Didn’t get a code?
-        </div>
+        <button
+  className="mt-3 text-white text-sm underline"
+  onClick={handleResend}
+  disabled={
+    timer > 0 || sending
+  }
+>
+  {timer > 0
+    ? `Resend Code (${timer}s)`
+    : sending
+    ? "Sending..."
+    : "Resend Verification Code"}
+</button>
+
       </div>
     </div>
   );

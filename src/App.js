@@ -51,6 +51,9 @@ import Courierforgetpassword from './courier/Courierforgetpassword';
 import Courierresetpasswordcode from './courier/Courierresetpasswordcode';
 import Couriernewpassword from './courier/Couriernewpassword';
 import Courierdashboard from './courier/Courierdashboard';
+import CourierEarnings from './courier/CourierEarnings';
+import ProtectedRoute from "./utils/ProtectedRoute";
+
 
 
 function App() {
@@ -107,7 +110,15 @@ function App() {
       <Route path="/courierforgetpassword" element={<Courierforgetpassword />} />
       <Route path="/courierresetpasswordcode" element={<Courierresetpasswordcode />} />
       <Route path="/couriernewpassword" element={<Couriernewpassword />} />
-      <Route path="/courierdashboard" element={<Courierdashboard />} />
+      <Route
+  path="/courierdashboard"
+  element={
+    <ProtectedRoute>
+      <Courierdashboard />
+    </ProtectedRoute>
+  }
+/>
+      <Route path="/courierearnings" element={<CourierEarnings />} />
     </Routes>
   );
 }

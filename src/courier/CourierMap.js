@@ -2,128 +2,246 @@ import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-export default function CourierMap({ location, incomingOrder }) {
+export default function CourierMap({
+  location,
+  surge,
+  online,
+  navigate,
+}) {
   const mapRef = useRef(null);
   const courierMarkerRef = useRef(null);
-  const restaurantMarkerRef = useRef(null);
-  const customerMarkerRef = useRef(null);
-  const routeLineRef = useRef(null);
 
-  // Initialize map once
+  // 🔥 NEW (IMPORTANT)
+  const zonesRef = useRef([]);            // store stable zones
+  const surgeCircleRefs = useRef([]);    // store drawn circles
+
+  const surgeControlRef = useRef(null);
+
+  /* ================= INIT MAP ================= */
   useEffect(() => {
-    if (!location) return; // guard against undefined
+    if (!location) return;
+
     if (!mapRef.current) {
       mapRef.current = L.map("courierMap", {
         center: [location.lat, location.lng],
         zoom: 15,
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(mapRef.current);
+      L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      ).addTo(mapRef.current);
     }
   }, [location]);
 
-  // Update markers and route
+  /* ================= COURIER MARKER ================= */
   useEffect(() => {
     if (!mapRef.current || !location) return;
 
     const map = mapRef.current;
 
-    // Courier Marker
     if (!courierMarkerRef.current) {
-      courierMarkerRef.current = L.marker([location.lat, location.lng], {
-        icon: L.icon({
-          iconUrl: "https://cdn-icons-png.flaticon.com/512/1995/1995472.png",
-          iconSize: [35, 35],
-          iconAnchor: [17, 35],
-        }),
-      }).addTo(map).bindPopup("You (Courier)");
+      courierMarkerRef.current = L.marker([
+        location.lat,
+        location.lng,
+      ]).addTo(map);
     } else {
-      courierMarkerRef.current.setLatLng([location.lat, location.lng]);
-    }
-
-    // Restaurant & Customer markers + route
-    if (incomingOrder) {
-      const { restaurant, customer } = incomingOrder;
-
-      // Restaurant Marker
-      if (!restaurantMarkerRef.current) {
-        restaurantMarkerRef.current = L.marker([restaurant.lat, restaurant.lng], {
-          icon: L.icon({
-            iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
-            iconSize: [35, 35],
-            iconAnchor: [17, 35],
-          }),
-        }).addTo(map).bindPopup("Restaurant");
-      } else {
-        restaurantMarkerRef.current.setLatLng([restaurant.lat, restaurant.lng]);
-      }
-
-      // Customer Marker
-      if (!customerMarkerRef.current) {
-        customerMarkerRef.current = L.marker([customer.lat, customer.lng], {
-          icon: L.icon({
-            iconUrl: "https://cdn-icons-png.flaticon.com/512/1946/1946429.png",
-            iconSize: [35, 35],
-            iconAnchor: [17, 35],
-          }),
-        }).addTo(map).bindPopup("Customer");
-      } else {
-        customerMarkerRef.current.setLatLng([customer.lat, customer.lng]);
-      }
-
-      // Route line
-      const points = [
-        [location.lat, location.lng],
-        [restaurant.lat, restaurant.lng],
-        [customer.lat, customer.lng],
-      ];
-
-      if (!routeLineRef.current) {
-        routeLineRef.current = L.polyline(points, { color: "blue", weight: 4 }).addTo(map);
-      } else {
-        routeLineRef.current.setLatLngs(points);
-      }
-
-      // Fit map bounds to show all points
-      const group = new L.featureGroup([
-        courierMarkerRef.current,
-        restaurantMarkerRef.current,
-        customerMarkerRef.current,
+      courierMarkerRef.current.setLatLng([
+        location.lat,
+        location.lng,
       ]);
-      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  }, [location]);
+
+  /* ================= 🔥 CREATE STABLE ZONES ================= */
+  useEffect(() => {
+    if (!mapRef.current || !location) return;
+
+    const map = mapRef.current;
+
+    // ✅ Create ONLY once when online
+    if (zonesRef.current.length === 0 && online) {
+      const multipliers = ["1x", "2.4x", "2.3x", "3x"];
+
+      zonesRef.current = Array.from({ length: 3 }).map(() => ({
+        lat: location.lat + (Math.random() - 0.5) * 0.01,
+        lng: location.lng + (Math.random() - 0.5) * 0.01,
+        multiplier:
+          multipliers[Math.floor(Math.random() * multipliers.length)],
+      }));
     }
 
-    // Remove restaurant/customer markers & route if no order
-    if (!incomingOrder) {
-      if (restaurantMarkerRef.current) {
-        map.removeLayer(restaurantMarkerRef.current);
-        restaurantMarkerRef.current = null;
+    // 🧹 Clear old circles safely
+    surgeCircleRefs.current.forEach((item) => {
+      if (item?.circle && map.hasLayer(item.circle)) {
+        map.removeLayer(item.circle);
       }
-      if (customerMarkerRef.current) {
-        map.removeLayer(customerMarkerRef.current);
-        customerMarkerRef.current = null;
-      }
-      if (routeLineRef.current) {
-        map.removeLayer(routeLineRef.current);
-        routeLineRef.current = null;
-      }
-    }
-  }, [location, incomingOrder]);
+    });
 
-  // Render map container
+    surgeCircleRefs.current = [];
+
+    let nearest = null;
+
+    // 🔁 Draw zones
+    zonesRef.current.forEach((z) => {
+
+  if (
+    typeof z.lat !== "number" ||
+    typeof z.lng !== "number" ||
+    Number.isNaN(z.lat) ||
+    Number.isNaN(z.lng)
+  ) {
+    console.log("❌ Invalid zone:", z);
+    return;
+  }
+
+  const distance = map.distance(
+    [location.lat, location.lng],
+    [z.lat, z.lng]
+  );
+
+  const circle = L.circle([z.lat, z.lng], {
+    radius: 400,
+    color: "red",
+    fillColor: "red",
+    fillOpacity: 0.25,
+  }).addTo(map);
+      circle.bindPopup(
+        `🔥 ${z.multiplier}<br/>📍 ${(distance / 1000).toFixed(2)} km away`
+      );
+
+      // 🔥 Click → go to earnings
+      circle.on("click", () => {
+        navigate("/courierearnings", {
+          state: { multiplier: z.multiplier, location: "Hot Zone" },
+        });
+      });
+
+      surgeCircleRefs.current.push({ circle, distance });
+
+      if (!nearest || distance < nearest.distance) {
+        nearest = { circle, distance };
+      }
+    });
+
+    // 🟠 Highlight nearest
+    if (nearest) {
+      nearest.circle.setStyle({
+        color: "orange",
+        fillColor: "orange",
+        fillOpacity: 0.5,
+      });
+    }
+
+  }, [location, online]);
+
+    /* ================= 🔥 UPDATE ONLY MULTIPLIERS ================= */
+  useEffect(() => {
+    if (!zonesRef.current.length) return;
+
+    const multipliers = ["1x", "2.4x", "2.3x", "3x"];
+
+    zonesRef.current = zonesRef.current.map((z) => ({
+      ...z,
+      multiplier:
+        multipliers[Math.floor(Math.random() * multipliers.length)],
+    }));
+  }, [surge]);
+
+  /* ================= RESET WHEN OFFLINE ================= */
+  useEffect(() => {
+    if (!online) {
+      zonesRef.current = [];
+    }
+  }, [online]);
+
+
+  /* ================= 🔄 REGENERATE ZONES EVERY 30s ================= */
+useEffect(() => {
+  if (!online) return;
+
+  const interval = setInterval(() => {
+    zonesRef.current = []; // clear → will regenerate on next render
+  }, 30000); // 30 seconds
+
+  return () => clearInterval(interval);
+}, [online]);
+
+
+  /* ================= 🔥 SURGE BUTTON ================= */
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const map = mapRef.current;
+
+    // ✅ Create button ONCE
+    if (!surgeControlRef.current) {
+      const surgeControl = L.control({ position: "topright" });
+
+      surgeControl.onAdd = function () {
+        const div = L.DomUtil.create("div");
+
+        div.innerHTML = `
+          <div id="surgeBtn" style="
+            background:white;
+            padding:8px 12px;
+            border-radius:10px;
+            font-weight:600;
+            cursor:pointer;
+            box-shadow:0 2px 6px rgba(0,0,0,0.2);
+            animation:pulse 1.5s infinite;
+          ">
+            🔥 <span id="surgeValue">${online ? surge : "1x"}</span>
+          </div>
+        `;
+
+        return div;
+      };
+
+      surgeControl.addTo(map);
+      surgeControlRef.current = surgeControl;
+
+      // Click once
+      setTimeout(() => {
+        const btn = document.getElementById("surgeBtn");
+        if (btn) {
+          btn.onclick = () =>
+            navigate("/courierearnings", {
+              state: { multiplier: surge, location: "Hot Zone" },
+            });
+        }
+      }, 300);
+    }
+
+    // ✅ Update value only
+    const valueEl = document.getElementById("surgeValue");
+    if (valueEl) {
+      valueEl.innerText = online ? surge : "1x";
+    }
+
+  }, [surge, online]);
+
   return (
-    <div
-      id="courierMap"
-      style={{
-        height: "400px",
-        width: "100%",
-        marginTop: 20,
-        borderRadius: 12,
-        overflow: "hidden",
-      }}
-    />
+    <>
+      {/* Pulse animation */}
+      <style>
+        {`
+          @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+        `}
+      </style>
+
+      {/* Map */}
+      <div
+        id="courierMap"
+        style={{
+          height: "400px",
+          width: "100%",
+          borderRadius: "12px",
+        }}
+      />
+    </>
   );
 }
