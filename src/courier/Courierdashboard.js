@@ -2746,7 +2746,9 @@ function Profile({
         </div>
       </div>
 
-      {/* SETTINGS */}
+
+    
+      {/* SETTINGS 
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
           <span>Notifications</span>
@@ -2767,7 +2769,9 @@ function Profile({
           <span>Auto Accept Orders</span>
           <input type="checkbox" />
         </div>
-      </div>
+      </div>  */}
+
+
 
       {/* ACTION BUTTONS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
