@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import CourierMap from "./CourierMap";
+import EarningsChart from "./EarningsChart";
 
 import API from "../api";
 import socket from "../socket";
-
 
 /* ================= MAIN DASHBOARD ================= */
 export default function CourierDashboard() {
@@ -60,6 +61,9 @@ const [withdrawAmount, setWithdrawAmount] =
 
   const [transactions, setTransactions] =
 useState([]);
+
+const [weeklyEarnings, setWeeklyEarnings] =
+useState([0, 0, 0, 0, 0, 0, 0]);
 
 const [deliveryHistory, setDeliveryHistory] =
   useState([]);
@@ -131,6 +135,52 @@ useEffect(() => {
 
 }, []);
 
+
+/* ================= WEEKLY EARNINGS ================= */
+useEffect(() => {
+
+  const fetchWeeklyEarnings =
+    async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem(
+            "courierToken"
+          );
+
+        const response =
+          await API.get(
+            "/orders/weekly-earnings",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        setWeeklyEarnings(
+          response.data
+        );
+
+      } catch (error) {
+
+        console.log(
+          "Weekly earnings fetch failed",
+          error
+        );
+
+      }
+
+    };
+
+  fetchWeeklyEarnings();
+
+}, []);
+
+
+/* ================= FeTch stat ================= */
 
 useEffect(() => {
 
@@ -254,6 +304,42 @@ useEffect(() => {
 
   
 
+  /* ================= LOAD PENDING ORDERS ================= */
+
+useEffect(() => {
+
+  const fetchPendingOrders = async () => {
+
+    try {
+
+      const token = localStorage.getItem("courierToken");
+
+      const response = await API.get(
+        "/orders/pending",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setIncomingOrders(response.data);
+
+    } catch (error) {
+
+      console.log(
+        "Failed to load pending orders",
+        error
+      );
+
+    }
+
+  };
+
+  fetchPendingOrders();
+
+}, []);
+
   
 /* ================= FETCH SOCKET ORDERS ================= */
 
@@ -261,56 +347,54 @@ useEffect(() => {
 
   const handleNewOrder = (order) => {
 
-    // Don't receive orders when offline
     if (!online) return;
 
     console.log("📦 NEW ORDER RECEIVED:", order);
 
-    // Add new order to the list
-    setIncomingOrders(prev => [
-      order,
-      ...prev
-    ]);
+    setIncomingOrders(prev => {
 
-    // Show notification
-    if (
-      Notification.permission === "granted"
-    ) {
+  const exists = prev.some(
+    o => o._id === order._id
+  );
 
-      const notification =
-        new Notification(
-          "📦 New Delivery Request",
-          {
-            body: `
+  if (exists) {
+    return prev;
+  }
+
+  return [
+    order,
+    ...prev
+  ];
+
+});
+
+    if (Notification.permission === "granted") {
+
+      const notification = new Notification(
+        "📦 New Delivery Request",
+        {
+          body: `
 Restaurant: ${order.restaurantName}
 Customer: ${order.customerName}
 Fee: €${order.fee}
 Pickup: ${order.pickupAddress}
-            `,
-          }
-        );
+          `,
+        }
+      );
 
       notification.onclick = () => {
         window.focus();
         setActiveTab("Requests");
       };
+
     }
+
   };
 
-  socket.on("new-order", (order) => {
-  console.log(
-    "🔥 SOCKET ORDER RECEIVED",
-    order
-  );
-
-  handleNewOrder(order);
-});
+  socket.on("new-order", handleNewOrder);
 
   return () => {
-    socket.off(
-      "new-order",
-      handleNewOrder
-    );
+    socket.off("new-order", handleNewOrder);
   };
 
 }, [online]);
@@ -322,7 +406,7 @@ Pickup: ${order.pickupAddress}
       return;
     }
 
-    setOrderTimer(20);
+    setOrderTimer(60);
     const interval = setInterval(() => {
       setOrderTimer((t) => {
         if (t <= 1) {
@@ -415,6 +499,38 @@ useEffect(() => {
     socket.off(
       "order-cancelled",
       handleCancelled
+    );
+
+  };
+
+}, []);
+
+
+
+  /* ================= Listen for "order-accepted"================ */
+
+useEffect(() => {
+
+  const handleOrderAccepted = (orderId) => {
+
+    setIncomingOrders(prev =>
+      prev.filter(
+        order => order._id !== orderId
+      )
+    );
+
+  };
+
+  socket.on(
+    "order-accepted",
+    handleOrderAccepted
+  );
+
+  return () => {
+
+    socket.off(
+      "order-accepted",
+      handleOrderAccepted
     );
 
   };
@@ -883,15 +999,16 @@ setOrderStage(
       default:
         return (
           <Home
-            online={online}
-            setOnline={setOnline}
-            wallet={wallet}
-            rating={rating}
-            location={location}
-            incomingOrder={incomingOrder}
-            surge={surge}
-            navigate={navigate}
-          />
+  online={online}
+  setOnline={setOnline}
+  wallet={wallet}
+  rating={rating}
+  location={location}
+  surge={surge}
+  navigate={navigate}
+  incomingOrders={incomingOrders}
+  weeklyEarnings={weeklyEarnings}
+/>
         );
     }
   };
@@ -899,9 +1016,12 @@ setOrderStage(
   return (
     <div className="flex min-h-screen bg-gray-100">
       {!isMobile && (
-<aside className="w-56 bg-orange-500 text-white p-5 flex flex-col justify-between">
-            <div>
-            <h3 className="text-lg mb-4">🛵 Courier</h3>
+<aside className="hidden md:flex fixed left-0 top-0 h-screen w-64 bg-orange-500 text-white flex-col justify-between shadow-2xl z-50">
+<div className="p-6 flex flex-col h-full">
+  
+<h3 className="text-2xl font-bold mb-10 text-center">
+  🛵 Courier
+</h3>
 
             {[
   "Home",
@@ -914,41 +1034,62 @@ setOrderStage(
               <div
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-2 p-2 rounded-md cursor-pointer ${
+                className={`flex items-center gap-4 px-4 py-4 rounded-xl cursor-pointer transition-all duration-200 mb-3 ${
                   activeTab === tab
   ? "bg-orange-700 font-semibold text-white"
   : "text-white hover:bg-orange-600"
                 }`}
               >
-                {tab === "Home" && "🏠"}
-                {tab === "Requests" && "🔔"}
-                {tab === "Orders" && "📦"}
-                {tab === "Wallet" && "💰"}
-                {tab === "History" && "📜"}
-                {tab === "Profile" && "👤"}
-                <span>{tab}</span>
+               {tab === "Home" && "🏠"}
+
+{tab === "Requests" && (
+  <div className="relative">
+    <span>🔔</span>
+
+    {incomingOrders.length > 0 && (
+      <span className="absolute -top-2 -right-3 bg-red-600 text-white text-[10px] min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
+        {incomingOrders.length}
+      </span>
+    )}
+  </div>
+)}
+
+{tab === "Orders" && "📦"}
+{tab === "Wallet" && "💰"}
+{tab === "History" && "📜"}
+{tab === "Profile" && "👤"}
+
+<span>{tab}</span>
+
               </div>
             ))}
 
-            <div
-              onClick={handleLogout}
-              className="mt-5 p-2 text-center bg-red-600 text-white rounded-md cursor-pointer"
-            >
-              🔒 Logout
-            </div>
-          </div>
+           <div className="mt-auto pt-8">
 
-          <div
-            className={`text-sm ${
-              online ? "text-green-600" : "text-gray-400"
-            }`}
-          >
-            ● {online ? "ONLINE" : "OFFLINE"}
-          </div>
+  <div
+    onClick={handleLogout}
+    className="bg-red-600 hover:bg-red-700 transition py-4 rounded-xl text-center cursor-pointer font-semibold"
+  >
+    🔒 Logout
+  </div>
+
+  <div
+    className={`mt-6 text-center font-semibold ${
+      online
+        ? "text-green-300"
+        : "text-orange-200"
+    }`}
+  >
+    ● {online ? "ONLINE" : "OFFLINE"}
+  </div>
+
+</div>
+
+</div>
         </aside>
       )}
 
-      <main className="flex-1 p-5 pb-28 relative">
+      <main className="flex-1 md:ml-64 p-6 pb-28 relative overflow-y-auto">
         {renderContent()}
       </main>
 
@@ -1283,11 +1424,11 @@ setOrderStage(
     >
       🔔
 
-      {incomingOrder && (
-        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-          1
-        </span>
-      )}
+      {incomingOrders.length > 0 && (
+  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] min-w-5 h-5 px-1 rounded-full flex items-center justify-center">
+    {incomingOrders.length}
+  </span>
+)}
     </button>
 
     <button
@@ -1337,75 +1478,670 @@ function Home({
   location,
   surge,
   navigate,
+  incomingOrders,
+  weeklyEarnings,
 }) {
+  
   return (
-    <>
-      <h2 className="text-xl font-semibold mb-4">Home</h2>
+  <div className="space-y-6">
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <Card title="Status" value={online ? "ONLINE" : "OFFLINE"} />
-        <Card title="Today’s Earnings" value={`€${wallet?.today || 0}`} />
-<Card title="Wallet Balance" value={`€${wallet?.available || 0}`} />
-        <Card title="Rating" value={`⭐ ${rating}`} />
+    {/* ================= HEADER ================= */}
+    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+      <div>
+        <h1 className="text-3xl font-bold">
+          Welcome back 👋
+        </h1>
+
+        <p className="text-gray-500">
+          Ready for your next delivery today.
+        </p>
       </div>
 
       <button
-        className={`py-3 px-4 rounded-lg mb-4 text-white ${
-          online ? "bg-red-600" : "bg-green-600"
+        className={`py-3 px-6 rounded-xl text-white font-semibold ${
+          online
+            ? "bg-red-600"
+            : "bg-green-600"
         }`}
         onClick={async () => {
 
-  const newStatus =
-    !online;
+          const newStatus = !online;
 
-  setOnline(
-    newStatus
-  );
+          setOnline(newStatus);
 
-  try {
+          try {
 
-    const token =
-      localStorage.getItem(
-        "courierToken"
-      );
+            const token =
+              localStorage.getItem(
+                "courierToken"
+              );
 
-    await API.put(
-      "/profile/online",
-      {
-        online:
-          newStatus,
-      },
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+            await API.put(
+              "/profile/online",
+              {
+                online: newStatus,
+              },
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
 
-  } catch (error) {
+          } catch (error) {
 
-    console.log(
-      "Failed to update online status",
-      error
-    );
+            console.log(
+              "Failed to update online status",
+              error
+            );
 
-  }
+          }
 
-}}
+        }}
       >
         {online ? "Go Offline" : "Go Online"}
       </button>
 
-      {/* ===== MAP ONLY (NO POPUP HERE) ===== */}
-      <CourierMap
-        location={location}
-        surge={surge}
-        online={online}
-        navigate={navigate}
+    </div>
+
+
+    {/* ================= TOP CARDS ================= */}
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5">
+
+  {/* STATUS */}
+  <div className="bg-white rounded-3xl p-5 shadow-sm hover:shadow-lg transition">
+
+    <div className="flex items-center justify-between">
+
+      <div>
+
+        <p className="text-gray-500 text-sm">
+          Status
+        </p>
+
+        <h2 className="text-2xl font-bold mt-2">
+          {online ? "ONLINE" : "OFFLINE"}
+        </h2>
+
+        <p className="text-sm text-green-600 mt-1">
+          {online
+            ? "🟢 Receiving Orders"
+            : "🔴 Not Receiving Orders"}
+        </p>
+
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center text-3xl">
+        🚦
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {/* TODAY */}
+
+  <div className="bg-white rounded-3xl p-5 shadow-sm hover:shadow-lg transition">
+
+    <div className="flex items-center justify-between">
+
+      <div>
+
+        <p className="text-gray-500 text-sm">
+          Today's Earnings
+        </p>
+
+        <h2 className="text-2xl font-bold mt-2">
+          €{wallet?.today || 0}
+        </h2>
+
+        <p className="text-green-600 text-sm mt-1">
+          💶 Earnings Today
+        </p>
+
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center text-3xl">
+        💰
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {/* WALLET */}
+
+  <div className="bg-white rounded-3xl p-5 shadow-sm hover:shadow-lg transition">
+
+    <div className="flex items-center justify-between">
+
+      <div>
+
+        <p className="text-gray-500 text-sm">
+          Wallet Balance
+        </p>
+
+        <h2 className="text-2xl font-bold mt-2">
+          €{wallet?.available || 0}
+        </h2>
+
+        <p className="text-blue-600 text-sm mt-1">
+          💳 Available Balance
+        </p>
+
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
+        👛
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {/* RATING */}
+
+  <div className="bg-white rounded-3xl p-5 shadow-sm hover:shadow-lg transition">
+
+    <div className="flex items-center justify-between">
+
+      <div>
+
+        <p className="text-gray-500 text-sm">
+          Rating
+        </p>
+
+        <h2 className="text-2xl font-bold mt-2">
+          ⭐ {rating}
+        </h2>
+
+        <p className="text-orange-600 text-sm mt-1">
+          Excellent
+        </p>
+
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-3xl">
+        ⭐
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {/* SURGE */}
+
+  <div className="bg-white rounded-3xl p-5 shadow-sm hover:shadow-lg transition">
+
+    <div className="flex items-center justify-between">
+
+      <div>
+
+        <p className="text-gray-500 text-sm">
+          Surge
+        </p>
+
+        <h2 className="text-2xl font-bold mt-2">
+          {surge}
+        </h2>
+
+        <p className="text-purple-600 text-sm mt-1">
+          ⚡ Live Multiplier
+        </p>
+
+      </div>
+
+      <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-3xl">
+        ⚡
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+    {/* ================= MAP + OVERVIEW ================= */}
+
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+
+      {/* LEFT SIDE */}
+
+      <div className="xl:col-span-2 bg-white rounded-3xl shadow-lg overflow-hidden">
+
+  {/* ================= MAP HEADER ================= */}
+
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 px-5 py-3 border-b">
+
+    <div>
+
+      <h2 className="text-xl font-bold flex items-center gap-2">
+        🗺️ Live Delivery Map
+      </h2>
+
+      <p className="text-sm text-gray-500">
+        Track your position and nearby deliveries in real time.
+      </p>
+
+    </div>
+
+    <div className="flex items-center gap-2">
+
+      <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold">
+        🟢 LIVE
+      </span>
+
+    </div>
+
+  </div>
+
+
+  {/* ================= QUICK MAP STATS ================= */}
+
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-gray-50">
+
+    <div className="bg-white rounded-2xl p-4 shadow-sm">
+
+      <p className="text-gray-500 text-sm">
+        📍 Latitude
+      </p>
+
+      <h3 className="font-bold mt-2">
+        {location?.lat?.toFixed(4)}
+      </h3>
+
+    </div>
+
+    <div className="bg-white rounded-2xl p-4 shadow-sm">
+
+      <p className="text-gray-500 text-sm">
+        📍 Longitude
+      </p>
+
+      <h3 className="font-bold mt-2">
+        {location?.lng?.toFixed(4)}
+      </h3>
+
+    </div>
+
+    <div className="bg-white rounded-2xl p-4 shadow-sm">
+
+      <p className="text-gray-500 text-sm">
+        📦 Pending Requests
+      </p>
+
+      <h3 className="font-bold mt-2">
+        {incomingOrders.length}
+      </h3>
+
+    </div>
+
+    <div className="bg-white rounded-2xl p-4 shadow-sm">
+
+      <p className="text-gray-500 text-sm">
+        ⚡ Surge
+      </p>
+
+      <h3 className="font-bold mt-2">
+        {surge}
+      </h3>
+
+    </div>
+
+  </div>
+
+
+  {/* ================= MAP ================= */}
+
+  <div className="h-[450px]">
+
+    <CourierMap
+      location={location}
+      surge={surge}
+      online={online}
+      navigate={navigate}
+    />
+
+  </div>
+
+</div>
+
+
+      {/* RIGHT SIDE */}
+
+      <div className="bg-white rounded-3xl shadow-lg p-6">
+
+  {/* HEADER */}
+
+  <div className="flex justify-between items-center mb-4">
+
+    <div>
+
+      <h2 className="text-xl font-bold">
+        🚚 Courier Performance
+      </h2>
+
+      <p className="text-gray-500 text-xs">
+  Live activity today
+</p>
+
+    </div>
+
+    <div className="text-3xl">
+      🛵
+    </div>
+
+  </div>
+
+
+  {/* STATUS */}
+
+  <div className="bg-orange-50 rounded-2xl p-4 mb-5">
+
+    <div className="flex justify-between">
+
+      <span className="text-gray-500">
+        Current Status
+      </span>
+
+      <strong className={online ? "text-green-600" : "text-red-600"}>
+
+        {online ? "🟢 ONLINE" : "🔴 OFFLINE"}
+
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  {/* STATS */}
+
+  <div className="grid grid-cols-2 gap-4">
+
+    <div className="bg-gray-50 rounded-2xl p-4">
+
+      <p className="text-gray-500 text-sm">
+        💶 Earnings
+      </p>
+
+      <h3 className="text-xl font-bold mt-2">
+        €{wallet?.today || 0}
+      </h3>
+
+    </div>
+
+    <div className="bg-gray-50 rounded-2xl p-4">
+
+      <p className="text-gray-500 text-sm">
+        👛 Wallet
+      </p>
+
+      <h3 className="text-xl font-bold mt-2">
+        €{wallet?.available || 0}
+      </h3>
+
+    </div>
+
+    <div className="bg-gray-50 rounded-2xl p-4">
+
+      <p className="text-gray-500 text-sm">
+        ⭐ Rating
+      </p>
+
+      <h3 className="text-xl font-bold mt-2">
+        {rating}
+      </h3>
+
+    </div>
+
+    <div className="bg-gray-50 rounded-2xl p-4">
+
+      <p className="text-gray-500 text-sm">
+        📦 Pending
+      </p>
+
+      <h3 className="text-xl font-bold mt-2">
+        {incomingOrders.length}
+      </h3>
+
+    </div>
+
+  </div>
+
+
+  {/* DAILY GOAL */}
+
+  <div className="mt-6">
+
+    <div className="flex justify-between mb-2">
+
+      <span className="font-semibold">
+        🎯 Daily Goal
+      </span>
+
+      <span>
+        €{wallet?.today || 0} / €100
+      </span>
+
+    </div>
+
+    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+
+      <div
+        className="bg-orange-500 h-full transition-all"
+        style={{
+          width: `${Math.min((wallet?.today || 0), 100)}%`,
+        }}
       />
-    </>
-  );
+
+    </div>
+
+  </div>
+
+
+  {/* SURGE */}
+
+  <div className="mt-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-5 text-white">
+
+    <div className="flex justify-between items-center">
+
+      <div>
+
+        <p className="opacity-80">
+          Current Surge
+        </p>
+
+        <h2 className="text-3xl font-bold">
+          ⚡ {surge}
+        </h2>
+
+      </div>
+
+      <div className="text-5xl">
+        🔥
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+    </div>
+
+
+    {/* ================= PLACEHOLDERS ================= */}
+
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+  {/* ================= WEEKLY EARNINGS ================= */}
+
+<div className="bg-white rounded-3xl shadow-lg p-6">
+
+  <div className="flex items-center justify-between mb-5">
+
+    <h2 className="text-lg font-bold">
+      📈 Weekly Earnings
+    </h2>
+
+    <span className="text-orange-500">
+      This Week
+    </span>
+
+  </div>
+
+  <EarningsChart
+  data={weeklyEarnings}
+/>
+
+</div>
+
+  {/* ================= WALLET BREAKDOWN ================= */}
+
+  <div className="bg-white rounded-3xl shadow-lg p-6">
+
+    <h2 className="text-lg font-bold mb-6">
+      💳 Wallet Breakdown
+    </h2>
+
+    <div className="space-y-5">
+
+      <div className="flex justify-between">
+
+        <span>Available</span>
+
+        <strong>
+          €{wallet?.available || 0}
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Pending</span>
+
+        <strong>
+          €{wallet?.pending || 0}
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Today's Earnings</span>
+
+        <strong>
+          €{wallet?.today || 0}
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between border-t pt-4">
+
+        <span>Total Earned</span>
+
+        <strong className="text-green-600">
+
+          €{wallet?.totalEarned || 0}
+
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {/* ================= ACTIVITY ================= */}
+
+  <div className="bg-white rounded-3xl shadow-lg p-6">
+
+    <h2 className="text-lg font-bold mb-6">
+
+      📜 Courier Activity
+
+    </h2>
+
+    <div className="space-y-4">
+
+      <div className="flex justify-between">
+
+        <span>Status</span>
+
+        <strong>
+
+          {online ? "🟢 Online" : "🔴 Offline"}
+
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Pending Orders</span>
+
+        <strong>
+
+          {incomingOrders.length}
+
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Rating</span>
+
+        <strong>
+
+          ⭐ {rating}
+
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Current Surge</span>
+
+        <strong>
+
+          {surge}
+
+        </strong>
+
+      </div>
+
+      <div className="flex justify-between border-t pt-4">
+
+        <span>Wallet</span>
+
+        <strong>
+
+          €{wallet?.available || 0}
+
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+  </div>
+);
 }
 
 
@@ -1589,14 +2325,14 @@ function RequestOrder({
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-      {orders.map((order) => (
+    {orders.map((order) => (
 
-        <div
-          key={order._id}
-          className="bg-white rounded-2xl shadow-xl overflow-hidden"
-        >
+      <div
+        key={order._id}
+        className="bg-white rounded-2xl shadow-xl overflow-hidden"
+      >
 
           <div className="bg-green-600 text-white p-5">
 
