@@ -40,6 +40,11 @@ const [completedOrders, setCompletedOrders] =
   const [orderStage, setOrderStage] = useState("Assigned");
   const [incomingOrders, setIncomingOrders] =
   useState([]);
+
+  useEffect(() => {
+  console.log("incomingOrders changed:", incomingOrders);
+}, [incomingOrders]);
+
   const incomingOrder = incomingOrders[0] || null;
 
   const [activeOrder, setActiveOrder] =useState(null);
@@ -76,10 +81,10 @@ const [deliveryHistory, setDeliveryHistory] =
   });
   
 
-  useEffect(() => {
+useEffect(() => {
   if (
-    Notification.permission !==
-    "granted"
+    "Notification" in window &&
+    Notification.permission !== "granted"
   ) {
     Notification.requestPermission();
   }
@@ -226,7 +231,13 @@ useEffect(() => {
 
 /* ================= LIVE GPS TRACKING ================= */
 useEffect(() => {
+
   if (!online) return;
+
+  if (!navigator.geolocation) {
+    console.log("Geolocation not supported");
+    return;
+  }
 
   const watchId =
     navigator.geolocation.watchPosition(
@@ -315,15 +326,17 @@ useEffect(() => {
       const token = localStorage.getItem("courierToken");
 
       const response = await API.get(
-        "/orders/pending",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  "/orders/pending",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
-      setIncomingOrders(response.data);
+console.log("PENDING ORDERS FROM API:", response.data);
+
+setIncomingOrders(response.data);
 
     } catch (error) {
 
@@ -368,7 +381,10 @@ useEffect(() => {
 
 });
 
-    if (Notification.permission === "granted") {
+    if (
+  "Notification" in window &&
+  Notification.permission === "granted"
+) {
 
       const notification = new Notification(
         "📦 New Delivery Request",
@@ -902,12 +918,9 @@ setOrderStage(
   }
 };
 
-  const handleLogout = () => {
-  localStorage.removeItem(
-    "courierToken"
-  );
-
-  navigate("/courierlogin");
+const handleLogout = () => {
+  localStorage.removeItem("courierToken");
+  navigate("/courierLogin");
 };
 
 
@@ -1004,6 +1017,7 @@ setOrderStage(
   wallet={wallet}
   rating={rating}
   location={location}
+  setLocation={setLocation}
   surge={surge}
   navigate={navigate}
   incomingOrders={incomingOrders}
@@ -1476,6 +1490,7 @@ function Home({
   wallet,
   rating,
   location,
+  setLocation,
   surge,
   navigate,
   incomingOrders,
@@ -1506,40 +1521,83 @@ function Home({
         }`}
         onClick={async () => {
 
-          const newStatus = !online;
+  const token =
+    localStorage.getItem("courierToken");
 
-          setOnline(newStatus);
+  const newStatus = !online;
 
-          try {
+  try {
 
-            const token =
-              localStorage.getItem(
-                "courierToken"
-              );
+    // If going ONLINE, update GPS first
+    if (newStatus) {
 
-            await API.put(
-              "/profile/online",
-              {
-                online: newStatus,
-              },
-              {
-                headers: {
-                  Authorization:
-                    `Bearer ${token}`,
-                },
-              }
-            );
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported on this device.");
+        return;
+      }
 
-          } catch (error) {
+      const position = await new Promise((resolve, reject) => {
 
-            console.log(
-              "Failed to update online status",
-              error
-            );
-
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
           }
+        );
 
-        }}
+      });
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      setLocation({
+        lat,
+        lng,
+      });
+
+      await API.put(
+        "/profile/location",
+        {
+          lat,
+          lng,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+    }
+
+    // Now update online status
+    await API.put(
+      "/profile/online",
+      {
+        online: newStatus,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setOnline(newStatus);
+
+  } catch (error) {
+
+    console.log(error);
+
+    alert(
+      "Unable to update your location. Please enable GPS and try again."
+    );
+
+  }
+
+}}
       >
         {online ? "Go Offline" : "Go Online"}
       </button>
@@ -1755,8 +1813,10 @@ function Home({
       </p>
 
       <h3 className="font-bold mt-2">
-        {location?.lat?.toFixed(4)}
-      </h3>
+  {typeof location?.lat === "number"
+    ? location.lat.toFixed(4)
+    : "--"}
+</h3>
 
     </div>
 
@@ -1767,8 +1827,10 @@ function Home({
       </p>
 
       <h3 className="font-bold mt-2">
-        {location?.lng?.toFixed(4)}
-      </h3>
+  {typeof location?.lng === "number"
+    ? location.lng.toFixed(4)
+    : "--"}
+</h3>
 
     </div>
 
@@ -2746,9 +2808,12 @@ function Profile({
         </div>
       </div>
 
+      
+      
 
-    
+
       {/* SETTINGS 
+
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
         <div className="p-4 border-b flex justify-between items-center">
           <span>Notifications</span>
@@ -2769,7 +2834,8 @@ function Profile({
           <span>Auto Accept Orders</span>
           <input type="checkbox" />
         </div>
-      </div>  */}
+      </div> */}
+
 
 
 
